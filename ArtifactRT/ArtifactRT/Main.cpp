@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "Vector3.inl"
+
 int main(int argumentCount, char** argumentVector)
 {
 	const size_t height = 256u;
@@ -15,12 +17,10 @@ int main(int argumentCount, char** argumentVector)
 	{
 		for (size_t j = 0; j < width; ++j)
 		{
-			double to_integer_range = 255.999;
-			int r = int(double(i) / (height - 1) * to_integer_range);
-			int g = int(double(j) / (width - 1) * to_integer_range);
-			int b = int(0.25 * to_integer_range);
-			
-			output_file << r << ' ' << g << ' ' << b << '\n';
+			RGBColor color = RGBColor(double(i) / (height - 1),
+				double(j) / (width - 1),
+				0.25);
+			WriteColor(output_file, color);
 		}
 	}
 	return 0;
