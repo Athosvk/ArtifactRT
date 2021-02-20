@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Ray.h"
 
 #include "Vector3.inl"
@@ -16,17 +15,26 @@ inline Point3 Ray::Sample(double samplePoint) const
 	return Origin + samplePoint * Direction;
 }
 
-inline bool Ray::Intersects(const Sphere& sphere) const
+inline std::optional<Point3> Ray::Intersects(const Sphere& sphere) const
 {
 	Vector3 distance = Origin - sphere.Center;
 	double a = Direction.GetDotProduct();
-	double b = 2.0 * distance.GetDotProduct(Direction);
+	double half_b = distance.GetDotProduct(Direction);
 	double c = distance.GetDotProduct() - sphere.Radius * sphere.Radius;
 
-	double discriminant = b * b - 4 * a * c;
+	double discriminant = half_b * half_b - a * c;
 	// < 0 no solutions
 	// == 0 1 solution
 	// > 9 2 solutions
 	// Incorrect in the book? One solution also means we hit the sphere
-	return discriminant >= 0;
+	if (discriminant < 0)
+	{
+		return std::nullopt;
+	}
+	double hit_point = (-half_b - std::sqrt(discriminant)) / a;
+	if (hit_point < 0)
+	{
+		return std::nullopt;
+	}
+	return Sample(hit_point);
 }
