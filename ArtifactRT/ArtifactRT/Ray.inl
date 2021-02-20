@@ -2,8 +2,15 @@
 
 #include "Ray.h"
 
-Ray::Ray(const Point3& origin, const Vector3& direction) :
+#include "Vector3.inl"
+
+inline Ray::Ray(const Point3& origin, const Vector3& direction) :
 	Origin(origin),
 	Direction(direction)
 {
+}
+
+inline Point3 Ray::Sample(double samplePoint) const
+{
+	return Origin + samplePoint * Direction;
 }
