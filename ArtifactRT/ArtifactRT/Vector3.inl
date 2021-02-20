@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-inline Vector3::Vector3(double x, double y, double z) :
+constexpr inline Vector3::Vector3(double x, double y, double z) :
 	X(x), Y(y), Z(z)
 {
 }
@@ -96,6 +96,11 @@ inline double Vector3::GetDotProduct() const
 	return GetLengthSquared();
 }
 
+inline double Vector3::GetDotProduct(const Vector3& other) const
+{
+	return X * other.X + Y * other.Y + Z * other.Z;
+}
+
 inline Vector3 Vector3::GetCrossProduct(const Vector3 other) const
 {
 	return Vector3( Y * other.Z - Z * other.Y, 
@@ -108,7 +113,7 @@ inline Vector3 Vector3::GetNormalized() const
 	return *this / GetLength();
 }
 
-inline Vector3 Vector3::GetZeroVector()
+constexpr inline Vector3 Vector3::GetZeroVector()
 {
 	return Vector3(0.0, 0.0, 0.0);
 }

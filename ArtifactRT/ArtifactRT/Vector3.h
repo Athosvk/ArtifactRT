@@ -4,7 +4,7 @@
 struct Vector3
 {
 	Vector3() = default;
-	inline Vector3(double x, double y, double z);
+	inline constexpr Vector3(double x, double y, double z);
 	
 	inline Vector3 operator-() const;
 	inline double operator[](int index) const;
@@ -24,9 +24,10 @@ struct Vector3
 	inline double GetLength() const;
 	inline double GetLengthSquared() const;
 	inline double GetDotProduct() const;
+	inline double GetDotProduct(const Vector3& other) const;
 	inline Vector3 GetCrossProduct(const Vector3 other) const;
 	inline Vector3 GetNormalized() const;
-	inline static Vector3 GetZeroVector();
+	constexpr inline static Vector3 GetZeroVector();
 
 	double X = 0.0;
 	double Y = 0.0;
