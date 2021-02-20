@@ -108,6 +108,11 @@ inline Vector3 Vector3::GetNormalized() const
 	return *this / GetLength();
 }
 
+inline Vector3 Vector3::GetZeroVector()
+{
+	return Vector3(0.0, 0.0, 0.0);
+}
+
 inline Vector3 operator*(double scalar, const Vector3& vector)
 {
 	return vector * scalar;
