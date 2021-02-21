@@ -1,6 +1,9 @@
 #pragma once
+#include <optional>
 
 #include "Vector3.h"
+
+struct Sphere;
 
 struct Ray
 {
