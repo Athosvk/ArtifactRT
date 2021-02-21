@@ -124,17 +124,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClInclude Include="HittableObject.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Vector3.inl">
       <FileType>Document</FileType>
     </ClInclude>
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Math.inl" />
     <None Include="Ray.inl" />
     <None Include="Sphere.inl" />
   </ItemGroup>
