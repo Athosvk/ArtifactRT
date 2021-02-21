@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <array>
+#include <vector>
 #include <algorithm>
 
 #include "Vector3.inl"
@@ -22,7 +22,7 @@ struct Camera
 	constexpr static double FocalLength = 1.0;
 };
 
-RGBColor SampleRayColor(const Ray& ray, std::array<Sphere, 1> spheres)
+RGBColor SampleRayColor(const Ray& ray, std::vector<Sphere> spheres)
 {
 	for (const Sphere& sphere : spheres)
 	{
@@ -39,10 +39,10 @@ RGBColor SampleRayColor(const Ray& ray, std::array<Sphere, 1> spheres)
 		t * RGBColor(0.5, 0.7, 1.0);
 }
 
-std::array<Sphere, 1> CreateSpheres()
+std::vector<Sphere> CreateSpheres()
 {
-	std::array<Sphere, 1> spheres;
-	spheres[0] = Sphere(Point3(0.0, 0.0, -1.0), 0.2, RGBColor(1.0, 0.0, 0.0));
+	std::vector<Sphere> spheres;
+	spheres.emplace_back(Point3(0.0, 0.0, -1.0), 0.2, RGBColor(1.0, 0.0, 0.0));
 	return spheres;
 }
 
@@ -60,7 +60,7 @@ int main(int argumentCount, char** argumentVector)
 	output_file.open("output.ppm", std::fstream::out);
 	output_file << "P3\n" << image.Width << ' ' << image.Height << "\n255\n";
 
-	std::array<Sphere, 1> spheres = CreateSpheres();
+	std::vector<Sphere> spheres = CreateSpheres();
 
 	for (int64_t i = image.Height - 1; i >= 0; --i)
 	{
