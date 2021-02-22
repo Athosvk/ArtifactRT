@@ -1,6 +1,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <string>
 #include <random>
 
 #include "Vector3.inl"
@@ -15,6 +16,7 @@ struct RenderTarget
 	constexpr static double AspectRatio = 16.0 / 16.0;
 	constexpr static int Width = 400;
 	constexpr static int Height = int(Width / AspectRatio);
+	constexpr static int SamplesPerPixel = 50;
 };
 
 RGBColor SampleRayColor(const Ray& ray, const Scene& scene)
@@ -51,7 +53,7 @@ int main(int argumentCount, char** argumentVector)
 	Camera camera(RenderTarget::AspectRatio);
 
 	std::fstream output_file;
-	output_file.open("output.ppm", std::fstream::out);
+	output_file.open("output_with_aa_" + std::to_string(RenderTarget::SamplesPerPixel) + ".ppm", std::fstream::out);
 	output_file << "P3\n" << image.Width << ' ' << image.Height << "\n255\n";
 
 	std::mt19937 random_generator = CreateRandomGeneraor();
@@ -63,10 +65,16 @@ int main(int argumentCount, char** argumentVector)
 	{
 		for (size_t j = 0; j < image.Width; ++j)
 		{
-			auto u = double(j) / (image.Width - 1);
-			auto v = double(i) / (image.Height - 1);
-			WriteColor(output_file, SampleRayColor(camera.CreateRay(u, v), scene));
+			RGBColor color;
+			for (size_t sample = 0; sample < RenderTarget::SamplesPerPixel; sample++)
+			{
+				auto u = (j + distribution(random_generator)) / (image.Width - 1);
+				auto v = (i + distribution(random_generator)) / (image.Height - 1);
+				color += SampleRayColor(camera.CreateRay(u, v), scene);
+			}
+			WriteColor(output_file, color / RenderTarget::SamplesPerPixel);
 		}
+		std::cout << "Line: " << (image.Height - i) << " out of " << image.Width << "\n";
 	}
 	return 0;
 }
