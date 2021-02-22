@@ -38,7 +38,7 @@ std::optional<RayIntersectionRecord> Sphere::Intersects(const Ray& ray, const Sa
 	ray_intersection_record.Point = ray.Sample(possible_hit_point);
 	ray_intersection_record.RaySamplePoint = possible_hit_point;
 
-	// Normalizing via radius here saves normalizing later in the calculations
+	// Normalizing via radius here saves determining the length later to normalize
 	Vector3 outward_normal = (ray_intersection_record.Point - Center) / Radius;
 	ray_intersection_record.FrontFace = ray.Direction.GetDotProduct(outward_normal) < 0.0;
 	ray_intersection_record.Normal = ray_intersection_record.FrontFace ? outward_normal : -outward_normal;
