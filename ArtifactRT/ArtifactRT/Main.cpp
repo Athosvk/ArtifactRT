@@ -20,6 +20,21 @@ struct RenderTarget
 	constexpr static int SamplesPerPixel = 100;
 };
 
+Point3 GetRandomInHemisphere(Vector3 normal, Random& randomGenerator)
+{
+	Point3 random_unit_sphere_point = randomGenerator.NextInUnitSphere();
+	return random_unit_sphere_point.GetDotProduct(normal) > 0.0 ? random_unit_sphere_point :
+		-random_unit_sphere_point;
+}
+
+enum class DiffuseType
+{
+	Hemispherical = 0,
+	Lambertian = 1,
+	LambertianApprox = 2
+};
+
+template<DiffuseType DiffuseType>
 RGBColor SampleRayColor(const Ray& ray, const Scene& scene, Random& randomGenerator, unsigned bounces = 256)
 {
 	if (bounces == 0)
@@ -30,8 +45,22 @@ RGBColor SampleRayColor(const Ray& ray, const Scene& scene, Random& randomGenera
 	std::optional<RayIntersectionRecord> intersection = scene.FindFirstIntersection(ray, boundaries);
 	if (intersection)
 	{
-		Point3 bounce_direction = randomGenerator.NextUnitVector() + intersection->Normal;
-		return 0.5 * SampleRayColor(Ray(intersection->Point, bounce_direction), 
+		Point3 bounce_direction; 
+		
+		switch (DiffuseType)
+		{
+			case DiffuseType::Hemispherical:
+				bounce_direction = GetRandomInHemisphere(intersection->Normal, randomGenerator);
+				break;
+			case DiffuseType::Lambertian:
+				bounce_direction = randomGenerator.NextUnitVector() + intersection->Normal;
+				break;
+			case DiffuseType::LambertianApprox:
+				// This is almost definitely slower than lambertian, but kept in as a reference
+				bounce_direction = randomGenerator.NextInUnitSphere() + intersection->Normal;
+		}
+		
+		return 0.5 * SampleRayColor<DiffuseType>(Ray(intersection->Point, bounce_direction), 
 			scene, randomGenerator, bounces - 1);
 	}
 
@@ -77,7 +106,7 @@ int main(int argumentCount, char** argumentVector)
 			{
 				auto u = (j + randomGenerator.Next()) / (image.Width - 1);
 				auto v = (i + randomGenerator.Next()) / (image.Height - 1);
-				color += SampleRayColor(camera.CreateRay(u, v), scene, randomGenerator);
+				color += SampleRayColor<DiffuseType::Hemispherical>(camera.CreateRay(u, v), scene, randomGenerator);
 			}
 			WriteColor(output_file, color / RenderTarget::SamplesPerPixel);
 		}

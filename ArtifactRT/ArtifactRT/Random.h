@@ -11,7 +11,7 @@ public:
 	float Next();
 	float Next(float min, float max);
 	Vector3 NextVector(float min, float max);
-	Vector3 NextInUnitSphere();
+	Point3 NextInUnitSphere();
 	Vector3 NextUnitVector();
 private:
 	std::mt19937 m_Generator;

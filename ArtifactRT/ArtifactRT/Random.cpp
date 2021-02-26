@@ -23,7 +23,7 @@ Vector3 Random::NextVector(float min, float max)
 	return Vector3(Next(min, max), Next(min, max), Next(min, max));
 }
 
-Vector3 Random::NextInUnitSphere()
+Point3 Random::NextInUnitSphere()
 {
 	while (true)
 	{
