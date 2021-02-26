@@ -10,23 +10,61 @@
 #include "Scene.h"
 #include "Math.h"
 #include "Camera.h"
+#include "Random.h"
 
 struct RenderTarget
 {
-	constexpr static double AspectRatio = 16.0 / 16.0;
+	constexpr static double AspectRatio = 16.0 / 9.0;
 	constexpr static int Width = 400;
 	constexpr static int Height = int(Width / AspectRatio);
-	constexpr static int SamplesPerPixel = 50;
+	constexpr static int SamplesPerPixel = 100;
 };
 
-RGBColor SampleRayColor(const Ray& ray, const Scene& scene)
+Point3 GetRandomInHemisphere(Vector3 normal, Random& randomGenerator)
 {
-	SampleBounds boundaries{ 0.0, Constants::Infinity };
+	Point3 random_unit_sphere_point = randomGenerator.NextInUnitSphere();
+	return random_unit_sphere_point.GetDotProduct(normal) > 0.0 ? random_unit_sphere_point :
+		-random_unit_sphere_point;
+}
+
+enum class DiffuseType
+{
+	Hemispherical = 0,
+	Lambertian = 1,
+	LambertianApprox = 2
+};
+
+template<DiffuseType DiffuseType>
+RGBColor SampleRayColor(const Ray& ray, const Scene& scene, Random& randomGenerator, unsigned bounces = 256)
+{
+	if (bounces == 0)
+	{
+		return RGBColor::GetZero();
+	}
+	SampleBounds boundaries{ 0.0001, Constants::Infinity };
 	std::optional<RayIntersectionRecord> intersection = scene.FindFirstIntersection(ray, boundaries);
 	if (intersection)
-		return 0.5 * (intersection->Normal + RGBColor(1, 1, 1));
+	{
+		Point3 bounce_direction; 
+		
+		switch (DiffuseType)
+		{
+			case DiffuseType::Hemispherical:
+				bounce_direction = GetRandomInHemisphere(intersection->Normal, randomGenerator);
+				break;
+			case DiffuseType::Lambertian:
+				bounce_direction = randomGenerator.NextUnitVector() + intersection->Normal;
+				break;
+			case DiffuseType::LambertianApprox:
+				// This is almost definitely slower than lambertian, but kept in as a reference
+				bounce_direction = randomGenerator.NextInUnitSphere() + intersection->Normal;
+		}
+		
+		return 0.5 * SampleRayColor<DiffuseType>(Ray(intersection->Point, bounce_direction), 
+			scene, randomGenerator, bounces - 1);
+	}
 
-	double t = 0.5 * ray.Direction.GetNormalized().Y + 1.0;
+	double t = 0.5 * ray.Direction.Normalize().Y + 1.0;
 	return (1.0 - t) * RGBColor(1.0, 1.0, 1.0) +
 		t * RGBColor(0.5, 0.7, 1.0);
 }
@@ -53,14 +91,12 @@ int main(int argumentCount, char** argumentVector)
 	Camera camera(RenderTarget::AspectRatio);
 
 	std::fstream output_file;
-	output_file.open("output_with_aa_" + std::to_string(RenderTarget::SamplesPerPixel) + ".ppm", std::fstream::out);
+	output_file.open("output.ppm", std::fstream::out);
 	output_file << "P3\n" << image.Width << ' ' << image.Height << "\n255\n";
-
-	std::mt19937 random_generator = CreateRandomGeneraor();
-	std::uniform_real_distribution distribution(0.0, 1.0);
 
 	Scene scene = CreateScene();
 
+	Random randomGenerator;
 	for (int64_t i = image.Height - 1; i >= 0; --i)
 	{
 		for (size_t j = 0; j < image.Width; ++j)
@@ -68,13 +104,13 @@ int main(int argumentCount, char** argumentVector)
 			RGBColor color;
 			for (size_t sample = 0; sample < RenderTarget::SamplesPerPixel; sample++)
 			{
-				auto u = (j + distribution(random_generator)) / (image.Width - 1);
-				auto v = (i + distribution(random_generator)) / (image.Height - 1);
-				color += SampleRayColor(camera.CreateRay(u, v), scene);
+				auto u = (j + randomGenerator.Next()) / (image.Width - 1);
+				auto v = (i + randomGenerator.Next()) / (image.Height - 1);
+				color += SampleRayColor<DiffuseType::Hemispherical>(camera.CreateRay(u, v), scene, randomGenerator);
 			}
 			WriteColor(output_file, color / RenderTarget::SamplesPerPixel);
 		}
-		std::cout << "Line: " << (image.Height - i) << " out of " << image.Width << "\n";
+		std::cout << "Line: " << (image.Height - i) << " out of " << image.Height << "\n";
 	}
 	return 0;
 }

@@ -108,12 +108,12 @@ inline Vector3 Vector3::GetCrossProduct(const Vector3 other) const
 					X * other.Y - Y * other.X);
 }
 
-inline Vector3 Vector3::GetNormalized() const
+inline Vector3 Vector3::Normalize() const
 {
 	return *this / GetLength();
 }
 
-constexpr inline Vector3 Vector3::GetZeroVector()
+constexpr inline Vector3 Vector3::GetZero()
 {
 	return Vector3(0.0, 0.0, 0.0);
 }

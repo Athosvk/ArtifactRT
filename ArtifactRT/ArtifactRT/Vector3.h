@@ -26,8 +26,8 @@ struct Vector3
 	inline double GetDotProduct() const;
 	inline double GetDotProduct(const Vector3& other) const;
 	inline Vector3 GetCrossProduct(const Vector3 other) const;
-	inline Vector3 GetNormalized() const;
-	constexpr inline static Vector3 GetZeroVector();
+	inline Vector3 Normalize() const;
+	constexpr inline static Vector3 GetZero();
 
 	double X = 0.0;
 	double Y = 0.0;
