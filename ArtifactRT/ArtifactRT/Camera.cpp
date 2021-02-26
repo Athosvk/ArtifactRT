@@ -4,7 +4,7 @@
 #include "Ray.inl"
 
 Camera::Camera(double aspectRatio) :
-	m_Origin(Vector3::GetZeroVector())
+	m_Origin(Vector3::GetZero())
 {
 	double viewportHeight = 2.0;
 	double viewportWidth = viewportHeight * aspectRatio;

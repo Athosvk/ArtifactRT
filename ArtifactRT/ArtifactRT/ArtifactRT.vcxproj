@@ -128,12 +128,14 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="HittableObject.h" />
     <ClInclude Include="Math.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Vector3.inl">
       <FileType>Document</FileType>
     </ClInclude>
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>

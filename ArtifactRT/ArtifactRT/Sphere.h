@@ -12,7 +12,7 @@ struct Sphere : public HittableObject
 	virtual std::optional<RayIntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const override;
 
 public:
-	Point3 Center = Point3::GetZeroVector();
+	Point3 Center = Point3::GetZero();
 	double Radius = 0.0;
-	RGBColor Color = RGBColor::GetZeroVector();
+	RGBColor Color = RGBColor::GetZero();
 };
