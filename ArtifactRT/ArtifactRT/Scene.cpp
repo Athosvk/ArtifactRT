@@ -5,14 +5,14 @@ void Scene::Add(std::unique_ptr<HittableObject> object)
 	m_Objects.emplace_back(std::move(object));
 }
 
-std::optional<RayIntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
+std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
-	std::optional<RayIntersectionRecord> closest;
+	std::optional<IntersectionRecord> closest;
 	SampleBounds sample_bounds = sampleBounds;
 
 	for (const auto& object : m_Objects)
 	{
-		std::optional<RayIntersectionRecord> intersection = object->Intersects(ray, sample_bounds);
+		std::optional<IntersectionRecord> intersection = object->Intersects(ray, sample_bounds);
 		if (intersection)
 		{
 			sample_bounds.MaxSample = intersection->RaySamplePoint;

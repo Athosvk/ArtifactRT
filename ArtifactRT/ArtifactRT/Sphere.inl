@@ -1,15 +1,14 @@
 #pragma once
-
 #include "Sphere.h"
 
-Sphere::Sphere(Point3 center, double radius, RGBColor color) :
+Sphere::Sphere(Point3 center, double radius, Material* material) :
 	Center(center),
 	Radius(radius),
-	Color(color)
+	m_Material(material)
 {
 }
 
-std::optional<RayIntersectionRecord> Sphere::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
+std::optional<IntersectionRecord> Sphere::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	Vector3 distance = ray.Origin - Center;
 	double a = ray.Direction.GetDotProduct();
@@ -34,7 +33,7 @@ std::optional<RayIntersectionRecord> Sphere::Intersects(const Ray& ray, const Sa
 			return std::nullopt;
 		}
 	}
-	RayIntersectionRecord ray_intersection_record;
+	IntersectionRecord ray_intersection_record;
 	ray_intersection_record.Point = ray.Sample(possible_hit_point);
 	ray_intersection_record.RaySamplePoint = possible_hit_point;
 
@@ -42,5 +41,6 @@ std::optional<RayIntersectionRecord> Sphere::Intersects(const Ray& ray, const Sa
 	Vector3 outward_normal = (ray_intersection_record.Point - Center) / Radius;
 	ray_intersection_record.FrontFace = ray.Direction.GetDotProduct(outward_normal) < 0.0;
 	ray_intersection_record.Normal = ray_intersection_record.FrontFace ? outward_normal : -outward_normal;
+	ray_intersection_record.Material = m_Material;
 	return ray_intersection_record;
 }

@@ -43,3 +43,10 @@ Vector3 Random::NextUnitVector()
 					m_NormalDistribution(m_Generator), 
 					m_NormalDistribution(m_Generator)).Normalize();
 }
+
+Point3 Random::NextInHemisphere(Vector3 normal)
+{
+		Point3 random_unit_sphere_point = NextInUnitSphere();
+		return random_unit_sphere_point.GetDotProduct(normal) > 0.0 ? random_unit_sphere_point :
+			-random_unit_sphere_point;
+}

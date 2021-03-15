@@ -9,7 +9,7 @@ class Scene
 {
 public:
 	void Add(std::unique_ptr<HittableObject> object);
-	std::optional<RayIntersectionRecord> FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const;
+	std::optional<IntersectionRecord> FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const;
 
 private:
 	std::vector<std::unique_ptr<HittableObject>> m_Objects;
