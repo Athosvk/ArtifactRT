@@ -16,6 +16,7 @@ struct Vector3
 	
 	inline Vector3 operator+(const Vector3& other) const;
 	inline Vector3 operator-(const Vector3& other) const;
+	inline Vector3 operator*(const Vector3& other) const;
 	inline Vector3 operator*(const double scalar) const;
 	inline Vector3 operator/(const double scalar) const;
 	
@@ -27,16 +28,17 @@ struct Vector3
 	inline double GetDotProduct(const Vector3& other) const;
 	inline Vector3 GetCrossProduct(const Vector3 other) const;
 	inline Vector3 Normalize() const;
+	inline bool IsNearZero() const;
+	inline Vector3 Reflect(const Vector3& normal) const;
 	constexpr inline static Vector3 GetZero();
 
 	double X = 0.0;
 	double Y = 0.0;
 	double Z = 0.0;
-
 };
 
 using Point3 = Vector3;
 using RGBColor = Vector3;
 
 std::ostream& WriteColor(std::ostream& outputStream, const RGBColor& color);
-
+inline Vector3 operator*(double scalar, const Vector3& vector);

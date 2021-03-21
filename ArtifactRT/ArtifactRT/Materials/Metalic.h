@@ -1,26 +1,16 @@
 #pragma once
 #include "Material.h"
 
-#include "../Vector3.h"
-
-enum class EDiffuseType
-{
-	Hemispherical = 0,
-	Lambertian = 1,
-	LambertianApprox = 2
-};
-
 class Random;
 
-class Lambertian : public Material
+class Metalic : public Material
 {
 public:
-	explicit Lambertian(RGBColor albedo, Random& random);
-
+	Metalic(const RGBColor& albedo, float fuzziness, Random& randomGenerator);
 	virtual std::optional<ScatterResult> Scatter(const Ray& incomingRay, const IntersectionRecord& intersection) const override;
 public:
 	RGBColor Albedo;
+	float Fuzziness;
 private:
 	Random& m_RandomGenerator;
 };
-

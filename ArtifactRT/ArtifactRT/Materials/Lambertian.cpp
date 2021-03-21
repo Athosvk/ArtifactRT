@@ -2,6 +2,7 @@
 
 #include "../HittableObject.h"
 #include "../Random.h"
+#include "../Vector3.inl"
 
 Lambertian::Lambertian(RGBColor albedo, Random& random) : 
 	Albedo(albedo),
@@ -9,7 +10,7 @@ Lambertian::Lambertian(RGBColor albedo, Random& random) :
 {
 }
 
-ScatterResult Lambertian::Scatter(const Ray& incomingRay, const IntersectionRecord& intersection) const
+std::optional<ScatterResult> Lambertian::Scatter(const Ray& incomingRay, const IntersectionRecord& intersection) const
 {
 	Point3 bounce_direction; 
 	
@@ -19,12 +20,24 @@ ScatterResult Lambertian::Scatter(const Ray& incomingRay, const IntersectionReco
 			bounce_direction = m_RandomGenerator.NextInHemisphere(intersection.Normal);
 			break;
 		case EDiffuseType::Lambertian:
+		{
 			bounce_direction = m_RandomGenerator.NextUnitVector() + intersection.Normal;
+			if (bounce_direction.IsNearZero())
+			{
+				bounce_direction = intersection.Normal;
+			}
 			break;
+		}
 		case EDiffuseType::LambertianApprox:
 			// This is almost definitely slower than lambertian, but kept in as a reference
 			bounce_direction = m_RandomGenerator.NextInUnitSphere() + intersection.Normal;
+
+			if (bounce_direction.IsNearZero())
+			{
+				bounce_direction = intersection.Normal;
+			}
+			break;
 	}
 
-	return { Albedo, Ray(intersection.Point, bounce_direction) };
+	return ScatterResult { Albedo, Ray(intersection.Point, bounce_direction) };
 }

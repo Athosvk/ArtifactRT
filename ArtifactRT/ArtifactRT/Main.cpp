@@ -12,14 +12,22 @@
 #include "Camera.h"
 #include "Random.h"
 #include "Materials/Lambertian.h"
+#include "Materials/Metalic.h"
 
 struct RenderTarget
 {
 	constexpr static double AspectRatio = 16.0 / 9.0;
-	constexpr static int Width = 400;
+	constexpr static int Width = 800;
 	constexpr static int Height = int(Width / AspectRatio);
-	constexpr static int SamplesPerPixel = 100;
+	constexpr static int SamplesPerPixel = 1000;
 };
+
+RGBColor SampleSkybox(const Ray& ray)
+{
+	double t = 0.5 * ray.Direction.Normalize().Y + 1.0;
+	return (1.0 - t) * RGBColor(1.0, 1.0, 1.0) +
+		t * RGBColor(0.5, 0.7, 1.0);
+}
 
 RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 256)
 {
@@ -31,23 +39,30 @@ RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 2
 	std::optional<IntersectionRecord> intersection = scene.FindFirstIntersection(ray, boundaries);
 	if (intersection)
 	{
-		ScatterResult scatter_result = intersection->Material->Scatter(ray, *intersection);
-		return 0.5 * SampleRayColor(scatter_result.ScatteredRay, 
-			scene, bounces - 1);
+		std::optional<ScatterResult> scatter_result = intersection->Material->Scatter(ray, *intersection);
+		if (scatter_result)
+			return scatter_result->Attenuation * SampleRayColor(scatter_result->ScatteredRay, scene, bounces - 1);
+		else
+			return RGBColor::GetZero();
 	}
-
-	double t = 0.5 * ray.Direction.Normalize().Y + 1.0;
-	return (1.0 - t) * RGBColor(1.0, 1.0, 1.0) +
-		t * RGBColor(0.5, 0.7, 1.0);
+	return SampleSkybox(ray);
 }
 
 Scene CreateScene(Random& randomGenerator)
 {
 	Scene scene;
-	std::unique_ptr<Material> material = std::make_unique<Lambertian>(RGBColor(1.0, 0.0, 0.0), randomGenerator);
+	std::unique_ptr<Material> material_ground = std::make_unique<Lambertian>(RGBColor(0.8, 0.8, 0.0), randomGenerator);
+	std::unique_ptr<Material> material_center_sphere = std::make_unique<Lambertian>(RGBColor(0.7, 0.3, 0.3), randomGenerator);
+	std::unique_ptr<Material> material_left_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.8, 0.8), 0.0f, randomGenerator);
+	std::unique_ptr<Material> material_right_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.6, 0.2), 0.0f, randomGenerator);
 	
-	scene.Add(std::make_unique<Sphere>(Point3(0.0, 0.0, -1.0), 0.5, material.get()));
-	scene.Add(std::make_unique<Sphere>(Point3(0.0, -100.5, -1), 100, material.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( -0.8,    0.5, -1.0),   0.3, material_left_sphere.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( -0.8,    0.0, -1.0),   0.3, material_left_sphere.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( 0.8,    0.5, -1.0),   0.3, material_right_sphere.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( 0.8,    0.0, -1.0),   0.3, material_right_sphere.get()));
+
+	scene.Add(std::make_unique<Sphere>(Point3(0,    0.2, -1.5),   0.5, material_center_sphere.get()));
 	return scene;
 }
 
@@ -67,7 +82,6 @@ int main(int argumentCount, char** argumentVector)
 	std::fstream output_file;
 	output_file.open("output.ppm", std::fstream::out);
 	output_file << "P3\n" << image.Width << ' ' << image.Height << "\n255\n";
-
 
 	Random randomGenerator;
 	Scene scene = CreateScene(randomGenerator);

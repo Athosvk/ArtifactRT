@@ -66,6 +66,11 @@ inline Vector3 Vector3::operator-(const Vector3& other) const
 	return Vector3(X - other.X, Y - other.Y, Z - other.Z);
 }
 
+inline Vector3 Vector3::operator*(const Vector3& other) const
+{
+	return Vector3(X * other.X, Y * other.Y, Z * other.Z);
+}
+
 inline Vector3 Vector3::operator*(const double scalar) const
 {
 	return Vector3(X * scalar, Y * scalar, Z * scalar);
@@ -111,6 +116,21 @@ inline Vector3 Vector3::GetCrossProduct(const Vector3 other) const
 inline Vector3 Vector3::Normalize() const
 {
 	return *this / GetLength();
+}
+
+inline bool Vector3::IsNearZero() const
+{
+	const auto epsilon = -1e8;
+	return std::abs(X) < epsilon && std::abs(Y) < epsilon && std::abs(Z) < epsilon;
+}
+
+inline Vector3 Vector3::Reflect(const Vector3& normal) const
+{
+	// Project this vector on the normal to get the length of the reflected vector
+	double projected_length = GetDotProduct(normal);
+	// Offset by normal projection * 2 to scale in opposite direction
+	// Assumes inward vector (this) ends at tail of normal
+	return *this - ( 2 * projected_length * normal);
 }
 
 constexpr inline Vector3 Vector3::GetZero()
