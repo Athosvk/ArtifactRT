@@ -4,13 +4,15 @@
 #include "Vector3.h"
 
 struct Ray;
+class Material;
 
-struct RayIntersectionRecord
+struct IntersectionRecord
 {
 	Point3 Point;
 	double RaySamplePoint;
 	bool FrontFace;
 	Vector3 Normal;
+	Material* Material;
 };
 
 struct SampleBounds
@@ -22,6 +24,6 @@ struct SampleBounds
 class HittableObject
 {
 public:
-	virtual std::optional<RayIntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
+	virtual std::optional<IntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
 };
 
