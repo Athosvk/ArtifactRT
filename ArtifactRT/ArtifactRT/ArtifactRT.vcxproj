@@ -123,8 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Benchmarking\ScopedTimer.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClInclude Include="Benchmarking\ScopedTimer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="HittableObject.h" />
     <ClInclude Include="Materials\Lambertian.h" />

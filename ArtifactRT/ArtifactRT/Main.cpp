@@ -1,8 +1,4 @@
 #include <fstream>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <random>
 
 #include "Vector3.inl"
 #include "Ray.inl"
@@ -13,6 +9,7 @@
 #include "Random.h"
 #include "Materials/Lambertian.h"
 #include "Materials/Metalic.h"
+#include "Benchmarking/ScopedTimer.h"
 
 struct RenderTarget
 {
@@ -82,6 +79,8 @@ int main(int argumentCount, char** argumentVector)
 
 	Random randomGenerator;
 	Scene scene = CreateScene(randomGenerator);
+	
+	ScopedTimer timer;
 	for (int64_t i = image.Height - 1; i >= 0; --i)
 	{
 		for (size_t j = 0; j < image.Width; ++j)
@@ -97,5 +96,7 @@ int main(int argumentCount, char** argumentVector)
 		}
 		std::cout << "Line: " << (image.Height - i) << " out of " << image.Height << "\n";
 	}
+	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
+	system("pause");
 	return 0;
 }
