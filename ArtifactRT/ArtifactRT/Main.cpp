@@ -9,6 +9,7 @@
 #include "Random.h"
 #include "Materials/Lambertian.h"
 #include "Materials/Metalic.h"
+#include "Materials/Dielectric.h"
 #include "Benchmarking/ScopedTimer.h"
 
 struct RenderTarget
@@ -50,13 +51,18 @@ Scene CreateScene(Random& randomGenerator)
 	Scene scene;
 	std::unique_ptr<Material> material_ground = std::make_unique<Lambertian>(RGBColor(0.8, 0.8, 0.0), randomGenerator);
 	std::unique_ptr<Material> material_center_sphere = std::make_unique<Lambertian>(RGBColor(0.7, 0.3, 0.3), randomGenerator);
-	std::unique_ptr<Material> material_left_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.8, 0.8), 0.3f, randomGenerator);
-	std::unique_ptr<Material> material_right_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.6, 0.2), 1.0f, randomGenerator);
+	std::unique_ptr<Material> material_left_sphere = std::make_unique<Dielectric>(1.5f, randomGenerator);
+	std::unique_ptr<Material> material_right_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.6, 0.2), 0.0f, randomGenerator);
 	
 	scene.Add(std::make_unique<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground.get()));
     scene.Add(std::make_unique<Sphere>(Point3( 0.0,    0.0, -1.0),   0.5, material_center_sphere.get()));
     scene.Add(std::make_unique<Sphere>(Point3(-1.0,    0.0, -1.0),   0.5, material_left_sphere.get()));
     scene.Add(std::make_unique<Sphere>(Point3( 1.0,    0.0, -1.0),   0.5, material_right_sphere.get()));
+
+	scene.AddMaterial(std::move(material_ground));
+	scene.AddMaterial(std::move(material_center_sphere));
+	scene.AddMaterial(std::move(material_left_sphere));
+	scene.AddMaterial(std::move(material_right_sphere));
 	return scene;
 }
 

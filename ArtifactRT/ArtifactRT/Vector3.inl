@@ -3,6 +3,7 @@
 #include "Vector3.h"
 
 #include <cmath>
+#include <algorithm>
 
 constexpr inline Vector3::Vector3(double x, double y, double z) :
 	X(x), Y(y), Z(z)
@@ -131,6 +132,14 @@ inline Vector3 Vector3::Reflect(const Vector3& normal) const
 	// Offset by normal projection * 2 to scale in opposite direction
 	// Assumes inward vector (this) ends at tail of normal
 	return *this - ( 2 * projected_length * normal);
+}
+
+inline Vector3 Vector3::Refract(const Vector3& normal, double etaOverEtaPrime) const
+{
+	double cos_theta = std::min(GetDotProduct(-normal), 1.0);
+	Vector3 r_out_perpendicular = etaOverEtaPrime * (*this + cos_theta * normal);
+	Vector3 r_out_parallel = -std::sqrt(std::abs(1.0 - r_out_perpendicular.GetLengthSquared())) * normal;
+	return r_out_perpendicular + r_out_parallel;
 }
 
 constexpr inline Vector3 Vector3::GetZero()

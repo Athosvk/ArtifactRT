@@ -30,6 +30,7 @@ struct Vector3
 	inline Vector3 Normalize() const;
 	inline bool IsNearZero() const;
 	inline Vector3 Reflect(const Vector3& normal) const;
+	inline Vector3 Refract(const Vector3& normal, double refractiveIndex) const;
 	constexpr inline static Vector3 GetZero();
 
 	double X = 0.0;
