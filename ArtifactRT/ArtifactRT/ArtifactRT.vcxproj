@@ -129,6 +129,7 @@
     <ClInclude Include="Benchmarking\ScopedTimer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="HittableObject.h" />
+    <ClInclude Include="Materials\Dielectric.h" />
     <ClInclude Include="Materials\Lambertian.h" />
     <ClInclude Include="Materials\Material.h" />
     <ClInclude Include="Materials\Metalic.h" />
@@ -140,6 +141,7 @@
     <ClInclude Include="Vector3.inl">
       <FileType>Document</FileType>
     </ClInclude>
+    <ClCompile Include="Materials\Dielectric.cpp" />
     <ClCompile Include="Materials\Lambertian.cpp" />
     <ClCompile Include="Materials\Metalic.cpp" />
     <ClCompile Include="Random.cpp" />
