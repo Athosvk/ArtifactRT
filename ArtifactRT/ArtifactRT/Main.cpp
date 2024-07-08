@@ -31,7 +31,7 @@ RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 2
 {
 	if (bounces == 0)
 	{
-		return RGBColor::GetZero();
+		return RGBColor::Zero();
 	}
 	SampleBounds boundaries{ 0.0001, Constants::Infinity };
 	std::optional<IntersectionRecord> intersection = scene.FindFirstIntersection(ray, boundaries);
@@ -41,7 +41,7 @@ RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 2
 		if (scatter_result)
 			return scatter_result->Attenuation * SampleRayColor(scatter_result->ScatteredRay, scene, bounces - 1);
 		else
-			return RGBColor::GetZero();
+			return RGBColor::Zero();
 	}
 	return SampleSkybox(ray);
 }
