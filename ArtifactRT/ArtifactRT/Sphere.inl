@@ -44,3 +44,8 @@ std::optional<IntersectionRecord> Sphere::Intersects(const Ray& ray, const Sampl
 	ray_intersection_record.Material = m_Material;
 	return ray_intersection_record;
 }
+
+inline AABB Sphere::Bounds() const
+{
+	return AABB { Center - Vector3::Fill(Radius), Center + Vector3::Fill(Radius)};
+}
