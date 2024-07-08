@@ -3,6 +3,7 @@
 #include "../HittableObject.h"
 #include "../Vector3.inl"
 #include "../Random.h"
+#include "../Ray.inl"
 
 Metalic::Metalic(const RGBColor& albedo, float fuziness, Random& randomGenerator) :
 	Albedo(albedo),

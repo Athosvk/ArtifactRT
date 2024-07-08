@@ -1,4 +1,5 @@
 #include "Random.h"
+#include "Vector3.inl"
 
 Random::Random() :
 	m_UniformDistribution(0.0, 1.0),

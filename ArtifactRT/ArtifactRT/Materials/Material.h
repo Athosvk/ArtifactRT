@@ -15,6 +15,8 @@ struct IntersectionRecord;
 class Material
 {
 public:
+	virtual ~Material() = default;
+
 	virtual std::optional<ScatterResult> Scatter(const Ray& incomingRay, 
 		const IntersectionRecord& intersection) const = 0;
 };

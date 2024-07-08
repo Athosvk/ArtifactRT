@@ -24,6 +24,8 @@ struct SampleBounds
 class HittableObject
 {
 public:
+	virtual ~HittableObject() = default;
+
 	virtual std::optional<IntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
 };
 
