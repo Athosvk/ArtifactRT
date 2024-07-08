@@ -4,6 +4,8 @@
 
 #include <cmath>
 #include <algorithm>
+#include <limits>
+#include <stdexcept>
 
 constexpr inline Vector3::Vector3(double x, double y, double z) :
 	X(x), Y(y), Z(z)
@@ -22,6 +24,7 @@ inline double Vector3::operator[](int index) const
 		case 0: return X;
 		case 1: return Y;
 		case 2: return Z;
+		default: throw std::out_of_range("Index >= 3");
 	}
 }
 
@@ -32,6 +35,7 @@ inline double& Vector3::operator[](int index)
 		case 0: return X;
 		case 1: return Y;
 		case 2: return Z;
+		default: throw std::out_of_range("Index >= 3");
 	}
 }
 
@@ -48,6 +52,7 @@ inline Vector3& Vector3::operator*=(const double scalar)
 	X *= scalar;
 	Y *= scalar;
 	Z *= scalar;
+	return *this;
 }
 
 inline Vector3& Vector3::operator/=(const double scalar)
@@ -55,6 +60,7 @@ inline Vector3& Vector3::operator/=(const double scalar)
 	X /= scalar;
 	Y /= scalar;
 	Z /= scalar;
+	return *this;
 }
 
 inline Vector3 Vector3::operator+(const Vector3& other) const
@@ -142,9 +148,34 @@ inline Vector3 Vector3::Refract(const Vector3& normal, double etaOverEtaPrime) c
 	return r_out_perpendicular + r_out_parallel;
 }
 
-constexpr inline Vector3 Vector3::GetZero()
+inline Vector3 Vector3::Min(const Vector3& other) const
 {
-	return Vector3(0.0, 0.0, 0.0);
+	return Vector3(std::min(X, other.X), std::min(Y, other.Y), std::min(Z, other.Z));
+}
+
+inline Vector3 Vector3::Max(const Vector3& other) const
+{
+	return Vector3(std::max(X, other.X), std::max(Y, other.Y), std::max(Z, other.Z));
+}
+
+constexpr inline Vector3 Vector3::Zero()
+{
+	return Vector3::Fill(0.0);
+}
+
+inline constexpr Vector3 Vector3::PosInfinity()
+{
+	return Vector3::Fill(std::numeric_limits<float>::infinity());
+}
+
+inline constexpr Vector3 Vector3::NegInfinity()
+{
+	return Vector3::Fill(-std::numeric_limits<float>::infinity());
+}
+
+inline constexpr Vector3 Vector3::Fill(double value)
+{
+	return Vector3(value, value, value);
 }
 
 inline Vector3 operator*(double scalar, const Vector3& vector)

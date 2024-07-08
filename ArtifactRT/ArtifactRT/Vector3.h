@@ -31,7 +31,12 @@ struct Vector3
 	inline bool IsNearZero() const;
 	inline Vector3 Reflect(const Vector3& normal) const;
 	inline Vector3 Refract(const Vector3& normal, double refractiveIndex) const;
-	constexpr inline static Vector3 GetZero();
+	inline Vector3 Min(const Vector3& other) const;
+	inline Vector3 Max(const Vector3& other) const;
+	constexpr inline static Vector3 Zero();
+	constexpr inline static Vector3 PosInfinity();
+	constexpr inline static Vector3 NegInfinity();
+	constexpr inline static Vector3 Fill(double value);
 
 	double X = 0.0;
 	double Y = 0.0;
