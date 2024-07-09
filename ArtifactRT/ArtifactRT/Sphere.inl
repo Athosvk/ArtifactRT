@@ -1,5 +1,6 @@
 #pragma once
 #include "Sphere.h"
+#include "Ray.inl"
 
 Sphere::Sphere(Point3 center, double radius, Material* material) :
 	Center(center),
