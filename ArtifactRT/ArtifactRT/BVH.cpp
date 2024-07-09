@@ -7,20 +7,16 @@
 #include "AABB.inl"
 
 
-BVH::BVH(std::vector<Sphere>& primitives) : m_primitives(primitives) {
+BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives) {
 }
 
 void BVH::build()
 {
 	m_nodes.reserve(m_primitives.size() * 2);
 	AABB root_bounds;
-	for (const Sphere& primitive : m_primitives) {
-		AABB sphere_bounds = {
-			primitive.Center - Vector3::Fill(primitive.Radius),
-			primitive.Center + Vector3::Fill(primitive.Radius)
-		};
+	for (const HittableObject* primitive : m_primitives) {
 
-		root_bounds = root_bounds.Grow(sphere_bounds);
+		root_bounds = root_bounds.Grow(primitive->GetBounds());
 	}
 
 	BVHNode root_node;
@@ -51,23 +47,23 @@ void BVH::subdivide(BVHNode& node)
 
 	auto primitives_start = &m_primitives[node.first_tri];
 	auto primitives_end = &m_primitives[node.first_tri + node.tri_count];
-	std::sort(primitives_start, primitives_end, [major_index](const Sphere& left, const Sphere& right) {
-			return left.Center[major_index] < right.Center[major_index];
+	std::sort(primitives_start, primitives_end, [major_index](const HittableObject* left, const HittableObject* right) {
+			return left->GetCenter()[major_index] < right->GetCenter()[major_index];
 		});
 
 	
 	const Vector3 midpoint = node.aabb.Min + extents / 2;
 	AABB left_aabb = AABB::NegativeBox();
 	uint32_t left_count = 0;
-	auto first_right = std::find_if(&m_primitives[node.first_tri], &m_primitives[node.first_tri + node.tri_count], [midpoint, major_index, left_aabb, &left_count](const Sphere& primitive) {
-		left_aabb.Grow(primitive.Bounds());
+	auto first_right = std::find_if(&m_primitives[node.first_tri], &m_primitives[node.first_tri + node.tri_count], [midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
+		left_aabb.Grow(primitive->GetBounds());
 		left_count += 1;
-		return primitive.Center[major_index] > midpoint[major_index];
+		return primitive->GetCenter()[major_index] > midpoint[major_index];
 		});
 
 	AABB right_aabb = AABB::NegativeBox();
 	for (auto iter = first_right; iter != primitives_end; iter++) {
-		right_aabb.Grow(iter->Bounds());
+		right_aabb.Grow((*iter)->GetBounds());
 	}
 
 	auto first_right_index = static_cast<uint32_t>(std::distance(primitives_start, first_right));

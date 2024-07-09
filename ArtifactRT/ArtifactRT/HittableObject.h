@@ -2,6 +2,7 @@
 #include <optional>
 
 #include "Vector3.h"
+#include "AABB.h"
 
 struct Ray;
 class Material;
@@ -27,5 +28,7 @@ public:
 	virtual ~HittableObject() = default;
 
 	virtual std::optional<IntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
+	virtual AABB GetBounds() const = 0;
+	virtual Point3 GetCenter() const = 0;
 };
 

@@ -13,7 +13,8 @@ struct Sphere : public HittableObject
 	virtual ~Sphere() override = default;
 
 	inline virtual std::optional<IntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const override;
-	inline AABB Bounds() const;
+	virtual AABB GetBounds() const override;
+	virtual Point3 GetCenter() const override;
 public:
 	Point3 Center = Point3::Zero();
 	double Radius = 0.0;
