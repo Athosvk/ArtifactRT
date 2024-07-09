@@ -7,7 +7,7 @@
 #include "AABB.inl"
 
 
-BVH::BVH(const std::vector<Sphere>& primitives) : m_primitives(primitives) {
+BVH::BVH(std::vector<Sphere>& primitives) : m_primitives(primitives) {
 }
 
 void BVH::build()
@@ -51,9 +51,9 @@ void BVH::subdivide(BVHNode& node)
 
 	auto primitives_start = &m_primitives[node.first_tri];
 	auto primitives_end = &m_primitives[node.first_tri + node.tri_count];
-//	std::sort(primitives_start, primitives_end, [major_index](Sphere left, Sphere right) {
-//			return left.Center[major_index] < right.Center[major_index];
-//		});
+	std::sort(primitives_start, primitives_end, [major_index](const Sphere& left, const Sphere& right) {
+			return left.Center[major_index] < right.Center[major_index];
+		});
 
 	
 	const Vector3 midpoint = node.aabb.Min + extents / 2;

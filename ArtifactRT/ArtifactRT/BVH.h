@@ -25,7 +25,7 @@ struct BVHNode
 class BVH
 {
 public:
-	BVH(const std::vector<Sphere>& primitives);
+	BVH(std::vector<Sphere>& primitives);
 
 private:
 	void build();
@@ -33,6 +33,6 @@ private:
 	void subdivide(BVHNode& node);
 
 	std::vector<BVHNode> m_nodes;
-	const std::vector<Sphere>& m_primitives;
+	std::vector<Sphere> m_primitives;
 };
 
