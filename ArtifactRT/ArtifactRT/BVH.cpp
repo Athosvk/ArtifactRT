@@ -2,34 +2,37 @@
 
 #include <cassert>
 #include <algorithm>
+#include <memory>
 
 #include "Sphere.inl"
 #include "AABB.inl"
 
 
 BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives) {
+	build();
 }
 
+[[clang::optnone]]
 void BVH::build()
 {
 	m_nodes.reserve(m_primitives.size() * 2);
 	AABB root_bounds;
 	for (const HittableObject* primitive : m_primitives) {
-
 		root_bounds = root_bounds.Grow(primitive->GetBounds());
 	}
 
-	BVHNode root_node;
-	root_node.aabb = root_bounds;
-	if (shouldSplit(root_node)) {
-		subdivide(root_node);
+	auto root_node = std::make_unique<BVHNode>(BVHNode{ root_bounds, true, });
+	root_node->is_leaf = true;
+	root_node->aabb = root_bounds;
+	if (shouldSplit(*root_node)) {
+		subdivide(*root_node);
 	}
 	m_nodes.shrink_to_fit();
 }
 
 bool BVH::shouldSplit(const BVHNode& node) const
 {
-	return node.tri_count > 5;
+	return node.prim_count > 1;
 }
 
 void BVH::subdivide(BVHNode& node)
@@ -46,7 +49,7 @@ void BVH::subdivide(BVHNode& node)
 	}
 
 	auto primitives_start = &m_primitives[node.first_tri];
-	auto primitives_end = &m_primitives[node.first_tri + node.tri_count];
+	auto primitives_end = &m_primitives[node.first_tri + node.prim_count];
 	std::sort(primitives_start, primitives_end, [major_index](const HittableObject* left, const HittableObject* right) {
 			return left->GetCenter()[major_index] < right->GetCenter()[major_index];
 		});
@@ -55,7 +58,7 @@ void BVH::subdivide(BVHNode& node)
 	const Vector3 midpoint = node.aabb.Min + extents / 2;
 	AABB left_aabb = AABB::NegativeBox();
 	uint32_t left_count = 0;
-	auto first_right = std::find_if(&m_primitives[node.first_tri], &m_primitives[node.first_tri + node.tri_count], [midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
+	auto first_right = std::find_if(&m_primitives[node.first_tri], &m_primitives[node.first_tri + node.prim_count], [midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
 		left_aabb.Grow(primitive->GetBounds());
 		left_count += 1;
 		return primitive->GetCenter()[major_index] > midpoint[major_index];
@@ -68,17 +71,21 @@ void BVH::subdivide(BVHNode& node)
 
 	auto first_right_index = static_cast<uint32_t>(std::distance(primitives_start, first_right));
 
-	BVHNode left_node = BVHNode{ left_aabb, true, { .tri_count = left_count, .first_tri = node.first_tri } };
-	BVHNode right_node = BVHNode{ right_aabb, true, {.tri_count = node.tri_count - left_count, .first_tri = first_right_index } };
+	auto left_node = std::make_unique<BVHNode>(BVHNode{ left_aabb, true, { .prim_count = left_count, .first_tri = node.first_tri } });
+	auto right_node = std::make_unique<BVHNode>(BVHNode{ right_aabb, true, {.prim_count = node.prim_count - left_count, .first_tri = first_right_index } });
 
-	m_nodes.push_back(left_node);
-	m_nodes.push_back(right_node);
+	node.is_leaf = false;
+	node.left = left_node.get();
+	node.right = right_node.get();
 
-	if (shouldSplit(left_node)) {
-		subdivide(left_node);
+	m_nodes.emplace_back(std::move(left_node));
+	m_nodes.emplace_back(std::move(right_node));
+
+	if (shouldSplit(*node.left)) {
+		subdivide(*node.left);
 	}
-	if (shouldSplit(right_node)) {
-		subdivide(right_node);
+	if (shouldSplit(*node.right)) {
+		subdivide(*node.right);
 	}
 
 }

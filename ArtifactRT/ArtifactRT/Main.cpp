@@ -63,6 +63,7 @@ Scene CreateScene(Random& randomGenerator)
 	scene.AddMaterial(std::move(material_center_sphere));
 	scene.AddMaterial(std::move(material_left_sphere));
 	scene.AddMaterial(std::move(material_right_sphere));
+	scene.BuildBVH();
 	return scene;
 }
 

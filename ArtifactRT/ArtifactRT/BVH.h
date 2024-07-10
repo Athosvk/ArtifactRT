@@ -16,7 +16,7 @@ struct BVHNode
 			BVHNode* right;
 		};
 		struct {
-			std::uint32_t tri_count;
+			std::uint32_t prim_count;
 			std::uint32_t first_tri;
 		};
 	};
@@ -32,7 +32,7 @@ private:
 	bool shouldSplit(const BVHNode& node) const;
 	void subdivide(BVHNode& node);
 
-	std::vector<BVHNode> m_nodes;
+	std::vector<std::unique_ptr<BVHNode>> m_nodes;
 	std::vector<const HittableObject*> m_primitives;
 };
 
