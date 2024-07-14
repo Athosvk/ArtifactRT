@@ -6,10 +6,24 @@
 inline bool AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds)
 {
 	// Check if begin or end is fully containedjj
-	if (Contains(ray.Sample(sampleBounds.MinSample)) || Contains(ray.Sample(sampleBounds.MaxSample))) {
+	if (Contains(ray.Sample(sampleBounds.MinSample)) || Contains(ray.Sample(sampleBounds.MaxSample)))
+	{
 		return true;
 	}
 
+	// From: https://tavianator.com/2011/ray_box.html
+	SampleBounds output = sampleBounds;
+	for (int i = 0; i < 3; i++) {
+		if (ray.Direction[i] != 0.0)
+		{
+			double tx1 = (Min[i] - ray.Origin[i]) / ray.Direction[i];
+			double tx2 = (Max[i] - ray.Origin[i]) / ray.Direction[i];
+
+			output.MinSample = std::max(output.MinSample, std::min(tx1, tx2));
+			output.MaxSample = std::min(output.MaxSample, std::max(tx1, tx2));
+		}
+	}
+	return output.MinSample < output.MaxSample;
 }
 
 inline bool AABB::Contains(Point3 point)
