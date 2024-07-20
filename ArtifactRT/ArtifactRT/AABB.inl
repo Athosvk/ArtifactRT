@@ -13,16 +13,16 @@ inline bool AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds) c
 
 	// From: https://tavianator.com/2011/ray_box.html
 	SampleBounds output = sampleBounds;
-	for (int i = 0; i < 3; i++)
-	{
-		if (ray.Direction[i] != 0.0)
-		{
-			double near_plane_t = (Min[i] - ray.Origin[i]) / ray.Direction[i];
-			double far_plane_t = (Max[i] - ray.Origin[i]) / ray.Direction[i];
+	Vector3 inv_direction = Vector3::Fill(1.0) / ray.Direction;
+	Vector3 near_plane_t = (Min - ray.Origin) * inv_direction;
+	Vector3 far_plane_t = (Max - ray.Origin) * inv_direction;
 
-			output.MinSample = std::max(output.MinSample, std::min(near_plane_t, far_plane_t));
-			output.MaxSample = std::min(output.MaxSample, std::max(near_plane_t, far_plane_t));
-		}
+	Vector3 min = near_plane_t.Min(far_plane_t);
+	Vector3 max = near_plane_t.Max(far_plane_t);
+	
+	for (int i = 0; i < 3; i++) {
+		output.MinSample = std::max(output.MinSample, min[i]);
+		output.MaxSample = std::min(output.MaxSample, max[i]);
 	}
 	return output.MinSample < output.MaxSample;
 }
@@ -36,7 +36,7 @@ inline bool AABB::Contains(Point3 point) const
 
 AABB AABB::Grow(const AABB& other) const {
 	return AABB{
-		Min.Max(other.Min),
+		Min.Min(other.Min),
 		Max.Max(other.Max)
 	};
 }
