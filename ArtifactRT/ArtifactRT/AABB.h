@@ -4,7 +4,8 @@
 struct Ray;
 struct SampleBounds;
 
-struct AABB {
+struct AABB 
+{
 public:
 	Vector3 Min;
 	Vector3 Max;
