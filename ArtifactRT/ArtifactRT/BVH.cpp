@@ -27,7 +27,7 @@ std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, con
 void BVH::build()
 {
 	m_nodes.reserve(m_primitives.size() * 2);
-	AABB root_bounds;
+	AABB root_bounds = AABB::NegativeBox();
 	for (const HittableObject* primitive : m_primitives) {
 		root_bounds = root_bounds.Grow(primitive->GetBounds());
 	}
