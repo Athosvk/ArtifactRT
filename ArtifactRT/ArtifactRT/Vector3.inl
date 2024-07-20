@@ -41,17 +41,14 @@ inline double& Vector3::operator[](int index)
 
 inline Vector3& Vector3::operator+=(const Vector3& other)
 {
-	X += other.X;
-	Y += other.Y;
-	Z += other.Z;
+	*this = *this + other;
 	return *this;
 }
 
-inline Vector3& Vector3::operator*=(const double scalar)
+
+inline Vector3& Vector3::operator-=(const Vector3& other)
 {
-	X *= scalar;
-	Y *= scalar;
-	Z *= scalar;
+	*this = *this - other;
 	return *this;
 }
 
@@ -86,6 +83,11 @@ inline Vector3 Vector3::operator*(const double scalar) const
 inline Vector3 Vector3::operator/(const double scalar) const
 {
 	return Vector3(X / scalar, Y / scalar, Z / scalar);
+}
+
+inline Vector3 Vector3::operator/(const Vector3& other) const
+{
+	return Vector3 { X / other.X, Y / other.Y, Z / other.Z };
 }
 
 inline std::ostream& Vector3::operator<<(std::ostream& outputStream) const
@@ -156,6 +158,16 @@ inline Vector3 Vector3::Min(const Vector3& other) const
 inline Vector3 Vector3::Max(const Vector3& other) const
 {
 	return Vector3(std::max(X, other.X), std::max(Y, other.Y), std::max(Z, other.Z));
+}
+
+inline double Vector3::ComponentMin() const
+{
+	return std::min(X, std::min(Y, Z));
+}
+
+inline double Vector3::ComponentMax() const
+{
+	return std::max(X, std::max(Y, Z));
 }
 
 constexpr inline Vector3 Vector3::Zero()

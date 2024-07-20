@@ -11,7 +11,7 @@ struct Vector3
 	inline double& operator[](int index);
 	
 	inline Vector3& operator+=(const Vector3& other);
-	inline Vector3& operator*=(const double scalar);
+	inline Vector3& operator-=(const Vector3& other);
 	inline Vector3& operator/=(const double scalar);
 	
 	inline Vector3 operator+(const Vector3& other) const;
@@ -19,6 +19,7 @@ struct Vector3
 	inline Vector3 operator*(const Vector3& other) const;
 	inline Vector3 operator*(const double scalar) const;
 	inline Vector3 operator/(const double scalar) const;
+	inline Vector3 operator/(const Vector3& other) const;
 	
 	inline std::ostream& operator<<(std::ostream& outputStream) const;
 	
@@ -33,6 +34,8 @@ struct Vector3
 	inline Vector3 Refract(const Vector3& normal, double refractiveIndex) const;
 	inline Vector3 Min(const Vector3& other) const;
 	inline Vector3 Max(const Vector3& other) const;
+	inline double ComponentMin() const;
+	inline double ComponentMax() const;
 	constexpr inline static Vector3 Zero();
 	constexpr inline static Vector3 Up();
 	constexpr inline static Vector3 Forward();
