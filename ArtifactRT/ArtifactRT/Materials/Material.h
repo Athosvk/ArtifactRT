@@ -7,7 +7,7 @@
 struct ScatterResult
 {
 	RGBColor Attenuation;
-	Ray ScatteredRay;
+	std::optional<Ray> ScatteredRay;
 };
 
 struct IntersectionRecord;

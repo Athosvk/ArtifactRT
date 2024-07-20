@@ -34,6 +34,9 @@ struct Vector3
 	inline Vector3 Min(const Vector3& other) const;
 	inline Vector3 Max(const Vector3& other) const;
 	constexpr inline static Vector3 Zero();
+	constexpr inline static Vector3 Up();
+	constexpr inline static Vector3 Forward();
+	constexpr inline static Vector3 Right();
 	constexpr inline static Vector3 PosInfinity();
 	constexpr inline static Vector3 NegInfinity();
 	constexpr inline static Vector3 Fill(double value);

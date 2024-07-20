@@ -6,13 +6,24 @@
 
 #include "Sphere.inl"
 #include "AABB.inl"
+#include "Materials/DebugMaterial.h"
 
-
-BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives) {
+BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives),
+	m_debug_material(std::make_unique<DebugMaterial>(RGBColor(1, 1, 0))) {
 	build();
 }
 
-[[clang::optnone]]
+std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
+{
+	if (m_root_node.AABB.Intersects(ray, sampleBounds))
+	{
+		return IntersectionRecord { Point3::Zero(), 0.0, true, -Vector3::Forward(),
+			static_cast<Material*>(m_debug_material.get()) };
+	}
+	
+	return {};
+}
+
 void BVH::build()
 {
 	m_nodes.reserve(m_primitives.size() * 2);
@@ -21,25 +32,26 @@ void BVH::build()
 		root_bounds = root_bounds.Grow(primitive->GetBounds());
 	}
 
-	auto root_node = std::make_unique<BVHNode>(BVHNode{ root_bounds, true, });
-	root_node->is_leaf = true;
-	root_node->aabb = root_bounds;
-	if (shouldSplit(*root_node)) {
-		subdivide(*root_node);
+	auto root_node = BVHNode{ root_bounds, true };
+	root_node.IsLeaf = true;
+	root_node.AABB = root_bounds;
+	m_root_node = root_node;
+	if (shouldSplit(m_root_node)) {
+		subdivide(m_root_node);
 	}
 	m_nodes.shrink_to_fit();
 }
 
 bool BVH::shouldSplit(const BVHNode& node) const
 {
-	return node.prim_count > 1;
+	return node.PrimitiveCount > 1;
 }
 
 void BVH::subdivide(BVHNode& node)
 {
-	assert(node.is_leaf && shouldSplit(node));
+	assert(node.IsLeaf && shouldSplit(node));
 
-	Vector3 extents = node.aabb.Extents();
+	Vector3 extents = node.AABB.Extents();
 	int major_index = 0;
 	if (extents.Y > extents.X) {
 		major_index = 1;
@@ -48,17 +60,18 @@ void BVH::subdivide(BVHNode& node)
 		major_index = 2;
 	}
 
-	auto primitives_start = &m_primitives[node.first_tri];
-	auto primitives_end = &m_primitives[node.first_tri + node.prim_count];
+	auto primitives_start = &m_primitives[node.FirstPrimitive];
+	auto primitives_end = &m_primitives[node.FirstPrimitive + node.PrimitiveCount];
 	std::sort(primitives_start, primitives_end, [major_index](const HittableObject* left, const HittableObject* right) {
 			return left->GetCenter()[major_index] < right->GetCenter()[major_index];
 		});
 
 	
-	const Vector3 midpoint = node.aabb.Min + extents / 2;
+	const Vector3 midpoint = node.AABB.Min + extents / 2;
 	AABB left_aabb = AABB::NegativeBox();
 	uint32_t left_count = 0;
-	auto first_right = std::find_if(&m_primitives[node.first_tri], &m_primitives[node.first_tri + node.prim_count], [midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
+	auto first_right = std::find_if(&m_primitives[node.FirstPrimitive], &m_primitives[node.FirstPrimitive + node.PrimitiveCount], 
+		[midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
 		left_aabb.Grow(primitive->GetBounds());
 		left_count += 1;
 		return primitive->GetCenter()[major_index] > midpoint[major_index];
@@ -71,21 +84,21 @@ void BVH::subdivide(BVHNode& node)
 
 	auto first_right_index = static_cast<uint32_t>(std::distance(primitives_start, first_right));
 
-	auto left_node = std::make_unique<BVHNode>(BVHNode{ left_aabb, true, { .prim_count = left_count, .first_tri = node.first_tri } });
-	auto right_node = std::make_unique<BVHNode>(BVHNode{ right_aabb, true, {.prim_count = node.prim_count - left_count, .first_tri = first_right_index } });
+	auto left_node = std::make_unique<BVHNode>(BVHNode{ left_aabb, true, { .PrimitiveCount = left_count, .FirstPrimitive = node.FirstPrimitive } });
+	auto right_node = std::make_unique<BVHNode>(BVHNode{ right_aabb, true, {.PrimitiveCount = node.PrimitiveCount - left_count, .FirstPrimitive = first_right_index } });
 
-	node.is_leaf = false;
-	node.left = left_node.get();
-	node.right = right_node.get();
+	node.IsLeaf = false;
+	node.Left = left_node.get();
+	node.Right = right_node.get();
 
 	m_nodes.emplace_back(std::move(left_node));
 	m_nodes.emplace_back(std::move(right_node));
 
-	if (shouldSplit(*node.left)) {
-		subdivide(*node.left);
+	if (shouldSplit(*node.Left)) {
+		subdivide(*node.Left);
 	}
-	if (shouldSplit(*node.right)) {
-		subdivide(*node.right);
+	if (shouldSplit(*node.Right)) {
+		subdivide(*node.Right);
 	}
 
 }

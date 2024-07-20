@@ -9,8 +9,8 @@ class Material;
 
 struct IntersectionRecord
 {
-	Point3 Point;
-	double RaySamplePoint;
+	Point3 IntersectionWorldSpace;
+	double T;
 	bool FrontFace;
 	Vector3 Normal;
 	Material* Material;

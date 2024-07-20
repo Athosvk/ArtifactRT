@@ -20,6 +20,6 @@ std::optional<ScatterResult> Metalic::Scatter(const Ray& incomingRay, const Inte
 	reflected_ray += m_RandomGenerator.NextInUnitSphere() * Fuzziness;
 
 	// Only scatter on the outside, not the inside; light doesn't reach so there's no light to reflect. Consider the rest "absorbed"
-	return reflected_ray.GetDotProduct(intersection.Normal) > 0 ? ScatterResult { Albedo, Ray(intersection.Point, reflected_ray) } : 
+	return reflected_ray.GetDotProduct(intersection.Normal) > 0 ? ScatterResult { Albedo, Ray(intersection.IntersectionWorldSpace, reflected_ray) } : 
 		std::optional<ScatterResult>(std::nullopt);
 };

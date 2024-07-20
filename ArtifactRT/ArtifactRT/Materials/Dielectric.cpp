@@ -30,7 +30,7 @@ std::optional<ScatterResult> Dielectric::Scatter(const Ray& incomingRay, const I
 	{
 		scatter_direction = incoming_ray_direction.Refract(intersection.Normal, refractive_index_ratio);
 	}
-	return ScatterResult { RGBColor(1.0, 1.0, 1.0), Ray(intersection.Point, scatter_direction) };
+	return ScatterResult { RGBColor(1.0, 1.0, 1.0), Ray(intersection.IntersectionWorldSpace, scatter_direction) };
 }
 
 double Dielectric::CalculateReflectance(double cosineTheta, double refractionRatio) const

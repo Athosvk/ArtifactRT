@@ -12,17 +12,26 @@ void Scene::AddMaterial(std::unique_ptr<Material> material)
 	m_Materials.push_back(std::move(material));
 }
 
-std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds)  const
+std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	std::optional<IntersectionRecord> closest;
 	SampleBounds sample_bounds = sampleBounds;
+
+	if (m_BVH) {
+		auto intersection = m_BVH->FindFirstIntersection(ray, sample_bounds);
+		if (intersection) {
+			// TODO: Get a nearest T from the bvh so that we can compare to others,
+			// if needed
+			return intersection;
+		}
+	}
 
 	for (const auto& object : m_Objects)
 	{
 		std::optional<IntersectionRecord> intersection = object->Intersects(ray, sample_bounds);
 		if (intersection)
 		{
-			sample_bounds.MaxSample = intersection->RaySamplePoint;
+			sample_bounds.MaxSample = intersection->T;
 			closest = intersection;
 		}
 	}
@@ -39,5 +48,5 @@ void Scene::BuildBVH()
 		objects.emplace_back(object.get());
 	}
 
-	m_BVH = std::make_unique<BVH>(objects);
+	m_BVH = BVH(objects);
 }

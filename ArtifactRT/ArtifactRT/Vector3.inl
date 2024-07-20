@@ -163,6 +163,21 @@ constexpr inline Vector3 Vector3::Zero()
 	return Vector3::Fill(0.0);
 }
 
+inline constexpr Vector3 Vector3::Up()
+{
+	return Vector3(0.0, 1.0, 0.0);
+}
+
+inline constexpr Vector3 Vector3::Forward()
+{
+	return Vector3(0.0, 0.0, 1.0);
+}
+
+inline constexpr Vector3 Vector3::Right()
+{
+	return Vector3(1.0, 0.0, 0.0);
+}
+
 inline constexpr Vector3 Vector3::PosInfinity()
 {
 	return Vector3::Fill(std::numeric_limits<float>::infinity());

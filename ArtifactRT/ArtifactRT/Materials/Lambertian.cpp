@@ -40,5 +40,5 @@ std::optional<ScatterResult> Lambertian::Scatter(const Ray& incomingRay, const I
 			break;
 	}
 
-	return ScatterResult { Albedo, Ray(intersection.Point, bounce_direction) };
+	return ScatterResult { Albedo, Ray(intersection.IntersectionWorldSpace, bounce_direction) };
 }

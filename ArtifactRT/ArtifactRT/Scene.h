@@ -18,6 +18,6 @@ public:
 private:
 	std::vector<std::unique_ptr<HittableObject>> m_Objects;
 	std::vector<std::unique_ptr<Material>> m_Materials;
-	std::unique_ptr<BVH> m_BVH;
+	std::optional<BVH> m_BVH;
 };
 
