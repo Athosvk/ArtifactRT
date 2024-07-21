@@ -3,12 +3,15 @@
 #include "Ray.h"
 #include "HittableObject.h"
 
-inline bool AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
+[[clang::optnone]]
+inline std::optional<double> AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
 {
-	// Check if begin or end is fully contained
-	if (Contains(ray.Sample(sampleBounds.MinSample)) || Contains(ray.Sample(sampleBounds.MaxSample)))
+	// Check if begin or end is fully contained. Note that sampling MinSample
+	// is essentially the ray origin in this instance
+	if (Contains(ray.Sample(sampleBounds.MinSample)) ||
+		Contains(ray.Origin))
 	{
-		return true;
+		return {};
 	}
 
 	// From: https://tavianator.com/2011/ray_box.html
@@ -20,18 +23,27 @@ inline bool AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds) c
 	Vector3 min = near_plane_t.Min(far_plane_t);
 	Vector3 max = near_plane_t.Max(far_plane_t);
 	
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
+	{
 		output.MinSample = std::max(output.MinSample, min[i]);
 		output.MaxSample = std::min(output.MaxSample, max[i]);
 	}
-	return output.MinSample < output.MaxSample;
+	if (output.MinSample < output.MaxSample)
+	{
+		return std::optional<double> { output.MinSample };
+	}
+	else 
+	{
+		return {};
+	}
 }
 
+[[clang::optnone]]
 inline bool AABB::Contains(Point3 point) const
 {
 	return point.X >= Min.X && point.X <= Max.X &&
-		point.Y >= Min.Y && point.Y <= Min.Y &&
-		point.Z >= Min.Z && point.Z <= Min.Z;
+		point.Y >= Min.Y && point.Y <= Max.Y &&
+		point.Z >= Min.Z && point.Z <= Max.Z;
 }
 
 AABB AABB::Grow(const AABB& other) const {
