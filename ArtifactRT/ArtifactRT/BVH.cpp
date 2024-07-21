@@ -15,13 +15,54 @@ BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitive
 
 std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
-	std::optional<double> hit_t = m_root_node.AABB.Intersects(ray, sampleBounds);
-	if (hit_t)
+	uint16_t traversal_steps = 0;
+
+	std::vector<const BVHNode*> to_visit;
+	to_visit.emplace_back(&m_root_node);
+
+	auto sample_bounds = sampleBounds;
+	std::optional<IntersectionRecord> closest_intersection = {};
+	while (!to_visit.empty())
 	{
-		return IntersectionRecord { ray.Sample(*hit_t), *hit_t, true, Vector3::Forward(),
-			static_cast<Material*>(m_debug_material.get()) };
+		const BVHNode& current_node = *to_visit.back();
+		to_visit.pop_back();
+		auto aabb_intersection = current_node.AABB.Intersects(ray, sampleBounds);
+		if (aabb_intersection)
+		{
+			if (current_node.IsLeaf)
+			{
+				for (int i = current_node.FirstPrimitive; i < current_node.FirstPrimitive + current_node.PrimitiveCount; i++)
+				{
+					std::optional<IntersectionRecord> intersection = m_primitives[i]->FindIntersection(ray, sample_bounds);
+					if (intersection)
+					{
+						// Discard any future found intersections automatically that may be further away than
+						// the the intersection found here
+						sample_bounds.MaxSample = intersection->T;
+						closest_intersection = intersection;
+					}
+				}
+
+			} 
+			else
+			{
+				to_visit.emplace(to_visit.begin(), current_node.Left);
+				to_visit.emplace(to_visit.begin(), current_node.Right);
+			}
+			traversal_steps++;
+		}
 	}
 	
+	if (closest_intersection)
+	{
+		closest_intersection->TraversalSteps = traversal_steps;
+		return closest_intersection;
+	}
+	if (traversal_steps > 1)
+	{
+		return IntersectionRecord{ Vector3::Zero(), 0.0, true, Vector3::Forward(),
+			static_cast<Material*>(m_debug_material.get()), traversal_steps };
+	}
 	return {};
 }
 
@@ -36,6 +77,8 @@ void BVH::build()
 	auto root_node = BVHNode{ root_bounds, true };
 	root_node.IsLeaf = true;
 	root_node.AABB = root_bounds;
+	root_node.FirstPrimitive = 0;
+	root_node.PrimitiveCount = m_primitives.size();
 	m_root_node = root_node;
 	if (shouldSplit(m_root_node)) {
 		subdivide(m_root_node);
@@ -62,7 +105,7 @@ void BVH::subdivide(BVHNode& node)
 	}
 
 	auto primitives_start = &m_primitives[node.FirstPrimitive];
-	auto primitives_end = &m_primitives[node.FirstPrimitive + node.PrimitiveCount];
+	auto primitives_end = &m_primitives[node.FirstPrimitive + node.PrimitiveCount - 1];
 	std::sort(primitives_start, primitives_end, [major_index](const HittableObject* left, const HittableObject* right) {
 			return left->GetCenter()[major_index] < right->GetCenter()[major_index];
 		});
@@ -71,7 +114,7 @@ void BVH::subdivide(BVHNode& node)
 	const Vector3 midpoint = node.AABB.Min + extents / 2;
 	AABB left_aabb = AABB::NegativeBox();
 	uint32_t left_count = 0;
-	auto first_right = std::find_if(&m_primitives[node.FirstPrimitive], &m_primitives[node.FirstPrimitive + node.PrimitiveCount], 
+	auto first_right = std::find_if(&m_primitives[node.FirstPrimitive], &m_primitives[node.FirstPrimitive + node.PrimitiveCount - 1], 
 		[midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
 		left_aabb.Grow(primitive->GetBounds());
 		left_count += 1;
