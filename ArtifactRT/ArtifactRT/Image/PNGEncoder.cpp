@@ -5,7 +5,7 @@
 #include <spng.h>
 #include <cassert>
 
-std::vector<char> PNGEncoder::encode(const Image& image)
+OutputBuffer PNGEncoder::encode(const Image& image)
 {
     spng_ihdr header = {
 		.width = image.Dimensions.Width,
@@ -17,7 +17,8 @@ std::vector<char> PNGEncoder::encode(const Image& image)
 
     spng_set_option(png_encoder_context, SPNG_ENCODE_TO_BUFFER, 1);
     auto return_value = spng_set_ihdr(png_encoder_context, &header);
-    if (return_value) {
+    if (return_value)
+    {
         std::cout << "Encoding error: " << spng_strerror(return_value) << "\n";
     }
     assert(return_value == 0 && "Could not set header");
@@ -26,7 +27,8 @@ std::vector<char> PNGEncoder::encode(const Image& image)
     return_value = spng_encode_image(png_encoder_context, static_cast<const void*>(pixel_data.data()), pixel_data.size(),
         SPNG_FMT_PNG, SPNG_ENCODE_FINALIZE);
 
-    if (return_value) {
+    if (return_value)
+    {
         std::cout << "Encoding error: " << spng_strerror(return_value) << "\n";
     }
     assert(return_value == 0 && "Could not encode PNG");
@@ -34,6 +36,10 @@ std::vector<char> PNGEncoder::encode(const Image& image)
     size_t output_buffer_size;
     char* output_buffer = static_cast<char*>(spng_get_png_buffer(png_encoder_context, &output_buffer_size, &return_value));
 
+    if (return_value)
+    {
+        std::cout << "Error retrieving encoded PNG: " << spng_strerror(return_value) << "\n";
+    }
     assert(return_value == 0 && "Could not retrieve encoded PNG");
-    return std::vector<char> { output_buffer, output_buffer + output_buffer_size };
+    return OutputBuffer{ std::unique_ptr<char[]>(output_buffer), output_buffer_size };
 }

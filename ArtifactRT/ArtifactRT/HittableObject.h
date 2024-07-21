@@ -27,7 +27,7 @@ class HittableObject
 public:
 	virtual ~HittableObject() = default;
 
-	virtual std::optional<IntersectionRecord> Intersects(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
+	virtual std::optional<IntersectionRecord> FindIntersection(const Ray& ray, const SampleBounds& sampleBounds) const = 0;
 	virtual AABB GetBounds() const = 0;
 	virtual Point3 GetCenter() const = 0;
 };

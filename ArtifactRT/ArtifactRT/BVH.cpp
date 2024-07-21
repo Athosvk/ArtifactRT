@@ -15,9 +15,10 @@ BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitive
 
 std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
-	if (m_root_node.AABB.Intersects(ray, sampleBounds))
+	std::optional<double> hit_t = m_root_node.AABB.Intersects(ray, sampleBounds);
+	if (hit_t)
 	{
-		return IntersectionRecord { Point3::Zero(), 0.0, true, -Vector3::Forward(),
+		return IntersectionRecord { ray.Sample(*hit_t), *hit_t, true, Vector3::Forward(),
 			static_cast<Material*>(m_debug_material.get()) };
 	}
 	
@@ -100,6 +101,5 @@ void BVH::subdivide(BVHNode& node)
 	if (shouldSplit(*node.Right)) {
 		subdivide(*node.Right);
 	}
-
 }
 

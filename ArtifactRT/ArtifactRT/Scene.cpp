@@ -19,7 +19,8 @@ std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, c
 
 	if (m_BVH) {
 		auto intersection = m_BVH->FindFirstIntersection(ray, sample_bounds);
-		if (intersection) {
+		if (intersection) 
+		{
 			// TODO: Get a nearest T from the bvh so that we can compare to others,
 			// if needed
 			return intersection;
@@ -28,9 +29,11 @@ std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, c
 
 	for (const auto& object : m_Objects)
 	{
-		std::optional<IntersectionRecord> intersection = object->Intersects(ray, sample_bounds);
+		std::optional<IntersectionRecord> intersection = object->FindIntersection(ray, sample_bounds);
 		if (intersection)
 		{
+			// Discard any intersections automatically that may be further away than
+			// the the intersection found here
 			sample_bounds.MaxSample = intersection->T;
 			closest = intersection;
 		}

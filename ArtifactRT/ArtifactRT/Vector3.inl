@@ -182,7 +182,7 @@ inline constexpr Vector3 Vector3::Up()
 
 inline constexpr Vector3 Vector3::Forward()
 {
-	return Vector3(0.0, 0.0, 1.0);
+	return Vector3(0.0, 0.0, -1.0);
 }
 
 inline constexpr Vector3 Vector3::Right()

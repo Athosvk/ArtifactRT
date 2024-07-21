@@ -9,7 +9,7 @@ Sphere::Sphere(Point3 center, double radius, Material* material) :
 {
 }
 
-std::optional<IntersectionRecord> Sphere::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
+std::optional<IntersectionRecord> Sphere::FindIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	Vector3 distance = ray.Origin - Center;
 	double a = ray.Direction.GetDotProduct();
