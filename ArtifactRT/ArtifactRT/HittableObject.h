@@ -14,6 +14,7 @@ struct IntersectionRecord
 	bool FrontFace;
 	Vector3 Normal;
 	Material* Material;
+	uint16_t TraversalSteps;
 };
 
 struct SampleBounds
