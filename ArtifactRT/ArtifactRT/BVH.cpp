@@ -19,14 +19,14 @@ std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, con
 {
 	uint16_t traversal_steps = 0;
 
-	m_traversal_scratch_buffer[0] = &m_root_node;
+	m_traversal_scratch_buffer[0] = 0;
 	uint32_t traversal_buffer_back = 1;
 
 	auto sample_bounds = sampleBounds;
 	std::optional<IntersectionRecord> closest_intersection = {};
 	while (traversal_buffer_back != 0)
 	{
-		const BVHNode& current_node = *m_traversal_scratch_buffer.at(traversal_buffer_back - 1);
+		const BVHNode& current_node = m_nodes.at(m_traversal_scratch_buffer.at(traversal_buffer_back - 1));
 		traversal_buffer_back--;
 		auto aabb_intersection = current_node.AABB.Intersects(ray, sampleBounds);
 		if (aabb_intersection)
@@ -132,21 +132,21 @@ void BVH::subdivide(BVHNode& node)
 
 	auto first_right_index = static_cast<uint32_t>(std::distance(primitives_start, first_right));
 
-	auto left_node = std::make_unique<BVHNode>(BVHNode{ left_aabb, true, { .PrimitiveCount = left_count, .FirstPrimitive = node.FirstPrimitive } });
-	auto right_node = std::make_unique<BVHNode>(BVHNode{ right_aabb, true, {.PrimitiveCount = node.PrimitiveCount - left_count, .FirstPrimitive = first_right_index } });
+	auto left_node = BVHNode{ left_aabb, true, { .PrimitiveCount = left_count, .FirstPrimitive = node.FirstPrimitive } };
+	auto right_node = BVHNode{ right_aabb, true, {.PrimitiveCount = node.PrimitiveCount - left_count, .FirstPrimitive = first_right_index } };
 
 	node.IsLeaf = false;
-	node.Left = left_node.get();
-	node.Right = right_node.get();
+	node.Left = m_nodes.size();
+	node.Right = m_nodes.size() + 1;
 
 	m_nodes.emplace_back(std::move(left_node));
 	m_nodes.emplace_back(std::move(right_node));
 
-	if (shouldSplit(*node.Left)) {
-		subdivide(*node.Left);
+	if (shouldSplit(m_nodes[node.Left])) {
+		subdivide(m_nodes[node.Left]);
 	}
-	if (shouldSplit(*node.Right)) {
-		subdivide(*node.Right);
+	if (shouldSplit(m_nodes[node.Right])) {
+		subdivide(m_nodes[node.Right]);
 	}
 }
 
