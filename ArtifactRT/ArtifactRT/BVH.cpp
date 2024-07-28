@@ -12,8 +12,7 @@ BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitive
 	m_debug_material(std::make_unique<DebugMaterial>(RGBColor(1, 1, 0))) 
 {
 	build();
-	// Reserve one for the root node
-	m_traversal_scratch_buffer.resize(m_nodes.size() * 2);
+	m_traversal_scratch_buffer.resize(m_nodes.size());
 }
 
 std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
