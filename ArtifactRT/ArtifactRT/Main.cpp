@@ -12,14 +12,15 @@
 #include "Materials/Dielectric.h"
 #include "Image/Image.h"
 #include "Image/PNGEncoder.h"
+#include "Image/PPMEncoder.h"
 #include "Benchmarking/ScopedTimer.h"
 
 struct RenderTarget
 {
 	constexpr static double AspectRatio = 16.0 / 9.0;
-	constexpr static uint32_t Width = 600;
+	constexpr static uint32_t Width = 200;
 	constexpr static uint32_t Height = int(Width / AspectRatio);
-	constexpr static uint32_t SamplesPerPixel = 25;
+	constexpr static uint32_t SamplesPerPixel = 50;
 };
 
 RGBColor SampleSkybox(const Ray& ray)
@@ -29,7 +30,7 @@ RGBColor SampleSkybox(const Ray& ray)
 		t * RGBColor(0.5, 0.7, 1.0);
 }
 
-RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 256)
+RGBColor SampleRayColor(const Ray& ray, const Scene& scene, unsigned bounces = 32)
 {
 	if (bounces == 0)
 	{
@@ -63,10 +64,23 @@ Scene CreateScene(Random& randomGenerator)
 	std::unique_ptr<Material> material_left_sphere = std::make_unique<Dielectric>(1.5f, randomGenerator);
 	std::unique_ptr<Material> material_right_sphere = std::make_unique<Metalic>(RGBColor(0.8, 0.6, 0.2), 0.0f, randomGenerator);
 	
-	//scene.Add(std::make_unique<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground.get()));
+	scene.Add(std::make_unique<Sphere>(Point3( 0.0, -105.5, -1.0), 100.0, material_ground.get()));
+	for (int i = 0; i < 10; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			scene.Add(std::make_unique<Sphere>(Point3(-2.0 + 0.3 * i, -2.0 + 0.3 * j, -5.0),   0.25, material_left_sphere.get()));
+		}
+	}
     scene.Add(std::make_unique<Sphere>(Point3( 0.0,    0.0, -5.0),   0.5, material_center_sphere.get()));
-    scene.Add(std::make_unique<Sphere>(Point3(-1.0,    0.0, -5.0),   0.5, material_left_sphere.get()));
-    //scene.Add(std::make_unique<Sphere>(Point3( 1.0,    0.0, -1.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3(-1.0,    0.1, -5.0),   0.5, material_left_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 1.9,    0.2, -2.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 1.2,    0.4, -3.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 1.1,    0.9, -4.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 1.4,    0.0, -8.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 1.2,    0.0, -9.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 3.0,    0.0, -10.0),   0.5, material_right_sphere.get()));
+    scene.Add(std::make_unique<Sphere>(Point3( 2.0,    0.0, -10.0),   0.5, material_right_sphere.get()));
 
 	scene.AddMaterial(std::move(material_ground));
 	scene.AddMaterial(std::move(material_center_sphere));
@@ -91,10 +105,6 @@ int main(int argumentCount, char** argumentVector)
 
 	Camera camera(RenderTarget::AspectRatio);
 
-	std::fstream ppm_output_file;
-	ppm_output_file.open("output.ppm", std::fstream::out);
-	ppm_output_file << "P3\n" << render_target.Width << ' ' << render_target.Height << "\n255\n";
-
 	Random randomGenerator;
 	Scene scene = CreateScene(randomGenerator);
 	
@@ -111,20 +121,32 @@ int main(int argumentCount, char** argumentVector)
 				color += SampleRayColor(camera.CreateRay(u, v), scene);
 			}
 			
-			WriteColor(ppm_output_file, color / RenderTarget::SamplesPerPixel);
 			image.Pixels.emplace_back(color / RenderTarget::SamplesPerPixel);
 		}
 		std::cout << "Traced line: " << (render_target.Height - i) << " out of " << render_target.Height << "\n";
 	}
+	
 	{
 		PNGEncoder encoder;
 		OutputBuffer png_buffer = encoder.encode(image);
 
-		std::fstream output_file;
+		std::ofstream output_file;
 		output_file.open("output.png", std::fstream::out | std::fstream::binary);
-		output_file.write(png_buffer.Output.get(), png_buffer.NumBytes);
+		output_file.write(png_buffer.Output.get(), png_buffer.NumChars);
 
 		output_file.close();
+	}
+	{
+		PPMEncoder encoder;
+		OutputBuffer ppm_buffer = encoder.encode(image);
+		
+		std::ofstream output_file;
+		output_file.open("output.ppm", std::fstream::out);
+		output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
+		std::cout.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
+
+		output_file.close();
+		
 	}
 	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
 	system("pause");

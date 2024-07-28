@@ -1,13 +1,10 @@
 #pragma once
-#include <vector>
-#include <memory>
-
-#include "../Vector3.h"
 #include "ImageEncoder.h"
 
-
-class PNGEncoder : public ImageEncoder
+class PPMEncoder : public ImageEncoder
 {
 public:
+	// Inherited via ImageEncoder
 	virtual OutputBuffer encode(const Image& image) const override;
 };
+

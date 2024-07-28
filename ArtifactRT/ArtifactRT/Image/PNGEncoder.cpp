@@ -5,7 +5,9 @@
 #include <spng.h>
 #include <cassert>
 
-OutputBuffer PNGEncoder::encode(const Image& image)
+#include "Image.h"
+
+OutputBuffer PNGEncoder::encode(const Image& image) const
 {
     spng_ihdr header = {
 		.width = image.Dimensions.Width,
