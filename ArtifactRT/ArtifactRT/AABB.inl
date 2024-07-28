@@ -3,7 +3,6 @@
 #include "Ray.h"
 #include "HittableObject.h"
 
-[[clang::optnone]]
 inline std::optional<double> AABB::Intersects(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	// Check if begin or end is fully contained. Note that sampling MinSample
@@ -11,7 +10,7 @@ inline std::optional<double> AABB::Intersects(const Ray& ray, const SampleBounds
 	if (Contains(ray.Sample(sampleBounds.MinSample)) ||
 		Contains(ray.Origin))
 	{
-		return {};
+		return { 0.0 };
 	}
 
 	// From: https://tavianator.com/2011/ray_box.html
@@ -38,7 +37,6 @@ inline std::optional<double> AABB::Intersects(const Ray& ray, const SampleBounds
 	}
 }
 
-[[clang::optnone]]
 inline bool AABB::Contains(Point3 point) const
 {
 	return point.X >= Min.X && point.X <= Max.X &&
