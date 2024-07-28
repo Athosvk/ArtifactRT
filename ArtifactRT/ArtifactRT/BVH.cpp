@@ -9,23 +9,26 @@
 #include "Materials/DebugMaterial.h"
 
 BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives),
-	m_debug_material(std::make_unique<DebugMaterial>(RGBColor(1, 1, 0))) {
+	m_debug_material(std::make_unique<DebugMaterial>(RGBColor(1, 1, 0))) 
+{
 	build();
+	// Reserve one for the root node
+	m_traversal_scratch_buffer.resize(m_nodes.size() * 2);
 }
 
 std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	uint16_t traversal_steps = 0;
 
-	std::vector<const BVHNode*> to_visit;
-	to_visit.emplace_back(&m_root_node);
+	m_traversal_scratch_buffer[0] = &m_root_node;
+	uint32_t traversal_buffer_back = 1;
 
 	auto sample_bounds = sampleBounds;
 	std::optional<IntersectionRecord> closest_intersection = {};
-	while (!to_visit.empty())
+	while (traversal_buffer_back != 0)
 	{
-		const BVHNode& current_node = *to_visit.back();
-		to_visit.pop_back();
+		const BVHNode& current_node = *m_traversal_scratch_buffer.at(traversal_buffer_back - 1);
+		traversal_buffer_back--;
 		auto aabb_intersection = current_node.AABB.Intersects(ray, sampleBounds);
 		if (aabb_intersection)
 		{
@@ -46,8 +49,9 @@ std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, con
 			} 
 			else
 			{
-				to_visit.emplace(to_visit.begin(), current_node.Left);
-				to_visit.emplace(to_visit.begin(), current_node.Right);
+				m_traversal_scratch_buffer[traversal_buffer_back + 2 - 1] = current_node.Left;
+				m_traversal_scratch_buffer[traversal_buffer_back + 1 - 1] = current_node.Right;
+				traversal_buffer_back += 2;
 			}
 			traversal_steps++;
 		}
@@ -58,6 +62,7 @@ std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, con
 		closest_intersection->TraversalSteps = traversal_steps;
 		return closest_intersection;
 	}
+	return {};
 	if (traversal_steps > 1)
 	{
 		return IntersectionRecord{ Vector3::Zero(), 0.0, true, Vector3::Forward(),

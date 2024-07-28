@@ -41,5 +41,6 @@ private:
 	std::vector<std::unique_ptr<BVHNode>> m_nodes;
 	std::vector<const HittableObject*> m_primitives;
 	std::unique_ptr<DebugMaterial> m_debug_material;
+	mutable std::vector<const BVHNode*> m_traversal_scratch_buffer;
 };
 
