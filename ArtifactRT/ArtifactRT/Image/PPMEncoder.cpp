@@ -25,7 +25,6 @@ OutputBuffer PPMEncoder::encode(const Image& image) const
 		output_chars << std::to_string(*(iter + 2)) << '\n';
 	}
 	auto output_str = output_chars.str();
-	std::cout << output_str;
 	OutputBuffer output_buffer;
 	output_buffer.BinaryData = false;
 	output_buffer.NumChars = output_str.size();

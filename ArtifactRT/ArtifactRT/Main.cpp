@@ -143,8 +143,6 @@ int main(int argumentCount, char** argumentVector)
 		std::ofstream output_file;
 		output_file.open("output.ppm", std::fstream::out);
 		output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
-		std::cout.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
-
 		output_file.close();
 		
 	}
