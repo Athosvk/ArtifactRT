@@ -16,8 +16,8 @@ struct BVHNode
 	bool IsLeaf;
 	union {
 		struct {
-			BVHNode* Left;
-			BVHNode* Right;
+			std::uint32_t Left;
+			std::uint32_t Right;
 		};
 		struct {
 			std::uint32_t PrimitiveCount;
@@ -38,8 +38,9 @@ private:
 	void subdivide(BVHNode& node);
 
 	BVHNode m_root_node;
-	std::vector<std::unique_ptr<BVHNode>> m_nodes;
+	std::vector<BVHNode> m_nodes;
 	std::vector<const HittableObject*> m_primitives;
 	std::unique_ptr<DebugMaterial> m_debug_material;
+	mutable std::vector<uint32_t> m_traversal_scratch_buffer;
 };
 
