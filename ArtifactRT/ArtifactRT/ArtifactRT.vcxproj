@@ -151,6 +151,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Image\Image.cpp" />
     <ClCompile Include="Image\PNGEncoder.cpp" />
+    <ClCompile Include="Image\PPMEncoder.cpp" />
     <ClCompile Include="Materials\DebugMaterial.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClInclude Include="AABB.h" />
@@ -158,7 +159,9 @@
     <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Image\Image.h" />
+    <ClInclude Include="Image\ImageEncoder.h" />
     <ClInclude Include="Image\PNGEncoder.h" />
+    <ClInclude Include="Image\PPMEncoder.h" />
     <ClInclude Include="Materials\DebugMaterial.h" />
     <ClInclude Include="HittableObject.h" />
     <ClInclude Include="Materials\Dielectric.h" />
