@@ -29,7 +29,7 @@ struct BVHNode
 class BVH
 {
 public:
-	BVH(std::vector<const HittableObject*> primitives);
+	BVH(std::vector<Sphere>&& primitives);
 
 	std::optional<IntersectionRecord> FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const;
 private:
@@ -39,7 +39,7 @@ private:
 
 	BVHNode m_root_node;
 	std::vector<BVHNode> m_nodes;
-	std::vector<const HittableObject*> m_primitives;
+	std::vector<Sphere> m_primitives;
 	std::unique_ptr<DebugMaterial> m_debug_material;
 	mutable std::vector<uint32_t> m_traversal_scratch_buffer;
 };

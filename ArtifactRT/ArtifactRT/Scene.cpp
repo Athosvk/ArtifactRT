@@ -1,10 +1,13 @@
 #include "Scene.h"
+
+#include <cassert>
+
 #include "Materials/Material.h"
 #include "Sphere.inl"
 
-void Scene::Add(std::unique_ptr<HittableObject> object)
+void Scene::AddSphere(Sphere&& sphere)
 {
-	m_Objects.emplace_back(std::move(object));
+	m_Spheres.emplace_back(sphere);
 }
 
 void Scene::AddMaterial(std::unique_ptr<Material> material)
@@ -15,41 +18,32 @@ void Scene::AddMaterial(std::unique_ptr<Material> material)
 std::optional<IntersectionRecord> Scene::FindFirstIntersection(const Ray& ray, const SampleBounds& sampleBounds) const
 {
 	std::optional<IntersectionRecord> closest;
-	SampleBounds sample_bounds = sampleBounds;
 
-	if (m_BVH) {
-		auto intersection = m_BVH->FindFirstIntersection(ray, sample_bounds);
-		if (intersection) 
-		{
-			// TODO: Get a nearest T from the bvh so that we can compare to others,
-			// if needed
-			return intersection;
-		}
-	}
-
-	for (const auto& object : m_Objects)
+#if defined(USE_BVH)
+	assert(m_BVH.has_value());
+	// Note: This currently doesn't correctly sample all primitives
+	auto intersection = m_BVH->FindFirstIntersection(ray, sampleBounds);
+	if (intersection) 
 	{
-		std::optional<IntersectionRecord> intersection = object->FindIntersection(ray, sample_bounds);
-		if (intersection)
+		// TODO: Get a nearest T from the bvh so that we can compare to others,
+		// if needed
+		closest = intersection;
+	}
+#else
+
+	for (const Sphere& sphere : m_Spheres)
+	{
+		auto intersection = sphere.FindIntersection(ray, sampleBounds);
+		if (intersection && (!closest || intersection->T < closest->T))
 		{
-			// Discard any intersections automatically that may be further away than
-			// the the intersection found here
-			sample_bounds.MaxSample = intersection->T;
 			closest = intersection;
 		}
 	}
-
+#endif
 	return closest;
 }
 
 void Scene::BuildBVH()
 {
-	std::vector<const HittableObject*> objects;
-	objects.reserve(m_Objects.size());
-	for (const auto& object : m_Objects)
-	{
-		objects.emplace_back(object.get());
-	}
-
-	m_BVH = BVH(objects);
+	m_BVH = BVH(std::vector<Sphere>(m_Spheres));
 }

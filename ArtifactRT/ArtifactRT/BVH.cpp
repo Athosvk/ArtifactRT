@@ -8,7 +8,9 @@
 #include "AABB.inl"
 #include "Materials/DebugMaterial.h"
 
-BVH::BVH(std::vector<const HittableObject*> primitives) : m_primitives(primitives),
+// TODO: Copying the primitives here does not allow for modification after initialization.
+// The BVH should return primitve indices instead.
+BVH::BVH(std::vector<Sphere>&& primitives) : m_primitives(primitives),
 	m_debug_material(std::make_unique<DebugMaterial>(RGBColor(1, 1, 0))) 
 {
 	build();
@@ -35,7 +37,7 @@ std::optional<IntersectionRecord> BVH::FindFirstIntersection(const Ray& ray, con
 			{
 				for (int i = current_node.FirstPrimitive; i < current_node.FirstPrimitive + current_node.PrimitiveCount; i++)
 				{
-					std::optional<IntersectionRecord> intersection = m_primitives[i]->FindIntersection(ray, sample_bounds);
+					std::optional<IntersectionRecord> intersection = m_primitives[i].FindIntersection(ray, sample_bounds);
 					if (intersection)
 					{
 						// Discard any future found intersections automatically that may be further away than
@@ -74,8 +76,8 @@ void BVH::build()
 {
 	m_nodes.reserve(m_primitives.size() * 2);
 	AABB root_bounds = AABB::NegativeBox();
-	for (const HittableObject* primitive : m_primitives) {
-		root_bounds = root_bounds.Grow(primitive->GetBounds());
+	for (const Sphere& primitive : m_primitives) {
+		root_bounds = root_bounds.Grow(primitive.GetBounds());
 	}
 
 	auto root_node = BVHNode{ root_bounds, true };
@@ -110,8 +112,8 @@ void BVH::subdivide(BVHNode& node)
 
 	auto primitives_start = &m_primitives[node.FirstPrimitive];
 	auto primitives_end = &m_primitives[node.FirstPrimitive + node.PrimitiveCount - 1];
-	std::sort(primitives_start, primitives_end, [major_index](const HittableObject* left, const HittableObject* right) {
-			return left->GetCenter()[major_index] < right->GetCenter()[major_index];
+	std::sort(primitives_start, primitives_end, [major_index](const Sphere& left, const Sphere& right) {
+			return left.GetCenter()[major_index] < right.GetCenter()[major_index];
 		});
 
 	
@@ -119,15 +121,15 @@ void BVH::subdivide(BVHNode& node)
 	AABB left_aabb = AABB::NegativeBox();
 	uint32_t left_count = 0;
 	auto first_right = std::find_if(&m_primitives[node.FirstPrimitive], &m_primitives[node.FirstPrimitive + node.PrimitiveCount - 1], 
-		[midpoint, major_index, left_aabb, &left_count](const HittableObject* primitive) {
-		left_aabb.Grow(primitive->GetBounds());
+		[midpoint, major_index, left_aabb, &left_count](const Sphere& primitive) {
+		left_aabb.Grow(primitive.GetBounds());
 		left_count += 1;
-		return primitive->GetCenter()[major_index] > midpoint[major_index];
+		return primitive.GetCenter()[major_index] > midpoint[major_index];
 		});
 
 	AABB right_aabb = AABB::NegativeBox();
 	for (auto iter = first_right; iter != primitives_end; iter++) {
-		right_aabb.Grow((*iter)->GetBounds());
+		right_aabb.Grow((*iter).GetBounds());
 	}
 
 	auto first_right_index = static_cast<uint32_t>(std::distance(primitives_start, first_right));
