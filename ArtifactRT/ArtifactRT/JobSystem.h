@@ -10,17 +10,12 @@
 
 #include <Windows.h>
 
-class JobThread {
-private:
-	//bool m_Waiting = true;
-};
-
 template<typename TJob>
 class JobSystem
 {
 public:
 	JobSystem() {
-		size_t numThreads = std::thread::hardware_concurrency() - 1;
+		size_t numThreads = std::thread::hardware_concurrency();
 		m_Threads.reserve(numThreads);
 		for (int i = 0; i < numThreads; i++)
 		{
@@ -48,6 +43,12 @@ public:
 		m_Jobs.emplace_back(std::move(job));
 	}
 
+	void SpawnAll(std::vector<TJob>&& jobs) {
+		std::scoped_lock jobsLock{ m_JobsMutex };
+		m_Jobs.reserve(m_Jobs.size() + jobs.size());
+		std::move(jobs.begin(), jobs.end(), std::back_inserter(m_Jobs));
+	}
+
 private:
 	std::optional<TJob> Get() {
 		std::unique_lock jobsLock{ m_JobsMutex };
@@ -61,7 +62,7 @@ private:
 	}
 
 	std::vector<std::thread> m_Threads;
-	std::deque<TJob> m_Jobs;
+	std::vector<TJob> m_Jobs;
 	std::mutex m_JobsMutex;
 	std::condition_variable m_NewJobNotify;
 
