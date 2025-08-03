@@ -25,9 +25,9 @@ constexpr static bool Concurrency = true;
 struct RenderTarget
 {
 	constexpr static double AspectRatio = 16.0 / 9.0;
-	constexpr static uint32_t Width = 1920 / 2;
+	constexpr static uint32_t Width = 960;
 	constexpr static uint32_t Height = int(Width / AspectRatio);
-	constexpr static uint32_t SamplesPerPixel = 3;
+	constexpr static uint32_t SamplesPerPixel = 128;
 };
 
 RGBColor SampleSkybox(const Ray& ray)
@@ -76,7 +76,7 @@ Scene CreateScene(Random& randomGenerator)
 	{
 		for (int j = 0; j < 10; j++)
 		{
-			scene.AddSphere(Sphere(Point3(-2.0 + 0.5 * i, -2.0 + 0.5 * j, -5.0),   0.45, material_left_sphere.get()));
+			scene.AddSphere(Sphere(Point3(-2.0 + i, -2.0 + j, -5.0),   0.45, material_left_sphere.get()));
 		}
 	}
     scene.AddSphere(Sphere(Point3( 0.0,    0.0, -5.0),   0.5, material_center_sphere.get()));
