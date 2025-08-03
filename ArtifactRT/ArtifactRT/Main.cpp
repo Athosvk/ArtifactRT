@@ -166,61 +166,59 @@ int main(int argumentCount, char** argumentVector)
 	{
 		jobSystem.emplace();
 	}
-	for (int i = 0; i < 1; i ++) {
-		ScopedTimer timer;
+	ScopedTimer timer;
 
-		std::vector<RenderJob> renderJobs;
+	std::vector<RenderJob> renderJobs;
 
-		const uint32_t NumJobs = render_target.Height * std::ceil(static_cast<float>(render_target.Width) / static_cast<float>(NumPixelsPerJob));
-		renderJobs.reserve(NumJobs);
-		std::latch done(NumJobs);
-		uint32_t numSpawned = 0;
-		for (size_t i = 0; i < render_target.Height; ++i)
+	const uint32_t NumJobs = render_target.Height * std::ceil(static_cast<float>(render_target.Width) / static_cast<float>(NumPixelsPerJob));
+	renderJobs.reserve(NumJobs);
+	std::latch done(NumJobs);
+	uint32_t numSpawned = 0;
+	for (size_t i = 0; i < render_target.Height; ++i)
+	{
+		for (size_t j = 0; j < render_target.Width; j += NumPixelsPerJob)
 		{
-			for (size_t j = 0; j < render_target.Width; j += NumPixelsPerJob)
-			{
-				renderJobs.emplace_back(image, i, j, render_target, camera, scene, done);
-				numSpawned++;
-			}
+			renderJobs.emplace_back(image, i, j, render_target, camera, scene, done);
+			numSpawned++;
 		}
-		std::cout << "Expecting " << numSpawned << "jobs\n";
+	}
+	std::cout << "Expecting " << numSpawned << "jobs\n";
 
-		if (jobSystem) {
-			jobSystem->SpawnAll(std::move(renderJobs));
-			std::cout << "All jobs spawned, waiting for " << NumJobs << " jobs" << std::endl;
+	if (jobSystem) {
+		jobSystem->SpawnAll(std::move(renderJobs));
+		std::cout << "All jobs spawned, waiting for " << NumJobs << " jobs" << std::endl;
 
-			done.wait();
+		done.wait();
 
-		}
-		else {
-			for (auto& job : renderJobs)
-			{
-				job(randomGenerator);
-			}
-		}
-		std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
-
-
+	}
+	else {
+		for (auto& job : renderJobs)
 		{
-			PNGEncoder encoder;
-			OutputBuffer png_buffer = encoder.encode(image);
-
-			std::ofstream output_file;
-			output_file.open("output.png", std::fstream::out | std::fstream::binary);
-			output_file.write(png_buffer.Output.get(), png_buffer.NumChars);
-
-			output_file.close();
+			job(randomGenerator);
 		}
-		{
-			PPMEncoder encoder;
-			OutputBuffer ppm_buffer = encoder.encode(image);
+	}
+	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
 
-			std::ofstream output_file;
-			output_file.open("output.ppm", std::fstream::out);
-			output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
-			output_file.close();
 
-		}
+	{
+		PNGEncoder encoder;
+		OutputBuffer png_buffer = encoder.encode(image);
+
+		std::ofstream output_file;
+		output_file.open("output.png", std::fstream::out | std::fstream::binary);
+		output_file.write(png_buffer.Output.get(), png_buffer.NumChars);
+
+		output_file.close();
+	}
+	{
+		PPMEncoder encoder;
+		OutputBuffer ppm_buffer = encoder.encode(image);
+
+		std::ofstream output_file;
+		output_file.open("output.ppm", std::fstream::out);
+		output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
+		output_file.close();
+
 	}
 	system("pause");
 	return 0;
