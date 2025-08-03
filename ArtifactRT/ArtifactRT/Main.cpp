@@ -27,7 +27,7 @@ struct RenderTarget
 	constexpr static double AspectRatio = 16.0 / 9.0;
 	constexpr static uint32_t Width = 960;
 	constexpr static uint32_t Height = int(Width / AspectRatio);
-	constexpr static uint32_t SamplesPerPixel = 128;
+	constexpr static uint32_t SamplesPerPixel = 3;
 };
 
 RGBColor SampleSkybox(const Ray& ray)

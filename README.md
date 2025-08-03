@@ -1,5 +1,5 @@
 # ArtifactRT
-A CPU Raytracer based on Peter Shirleys Ray Tracing in One Weekend that has been slightly itterated upon.
+A CPU Raytracer based on Peter Shirleys Ray Tracing in One Weekend that has been slightly iterated upon, primarily in terms of performance.
 
 ![Sample raytraced image](ArtifactRT/ArtifactRT/output.png)
 
