@@ -2,8 +2,8 @@
 #include <optional>
 
 #include "Vector3.inl"
-#include "HittableObject.h"
-#include "Materials/Material.h"
+#include "../HittableObject.h"
+#include "../Materials/Material.h"
 #include "AABB.h"
 
 struct Sphere : public HittableObject

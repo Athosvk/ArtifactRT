@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 
-#include "../Vector3.h"
+#include "../Math/Vector3.h"
 #include "ImageEncoder.h"
 
 

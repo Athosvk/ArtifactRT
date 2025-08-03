@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "Materials/Material.h"
-#include "Sphere.inl"
+#include "Math/Sphere.inl"
 
 void Scene::AddSphere(Sphere&& sphere)
 {

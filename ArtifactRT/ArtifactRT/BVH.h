@@ -1,13 +1,15 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+
+// Workaround for clang issue
 #if _HAS_CXX17 == 0
 #define _HAS_CXX17 1
 #endif
 #include <optional>
 
-#include "AABB.h"
-#include "Sphere.h"
+#include "Math/AABB.h"
+#include "Math/Sphere.h"
 #include "Materials/DebugMaterial.h"
 
 struct BVHNode

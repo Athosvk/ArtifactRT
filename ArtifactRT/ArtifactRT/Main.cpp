@@ -1,10 +1,11 @@
 #include <fstream>
+#include <latch>
 
-#include "Vector3.inl"
-#include "Ray.inl"
-#include "Sphere.inl"
+#include "Math/Vector3.inl"
+#include "Math/Ray.inl"
+#include "Math/Sphere.inl"
 #include "Scene.h"
-#include "Math.h"
+#include "Math/Math.h"
 #include "Camera.h"
 #include "Random.h"
 #include "Materials/Lambertian.h"
@@ -14,11 +15,17 @@
 #include "Image/PNGEncoder.h"
 #include "Image/PPMEncoder.h"
 #include "Benchmarking/ScopedTimer.h"
+#include "JobSystem.h"
+
+#include <cmath>
+
+constexpr static uint32_t NumPixelsPerJob = 64;
+constexpr static bool Concurrency = true;
 
 struct RenderTarget
 {
 	constexpr static double AspectRatio = 16.0 / 9.0;
-	constexpr static uint32_t Width = 960;
+	constexpr static uint32_t Width = 1920 / 2;
 	constexpr static uint32_t Height = int(Width / AspectRatio);
 	constexpr static uint32_t SamplesPerPixel = 3;
 };
@@ -97,35 +104,102 @@ std::mt19937 CreateRandomGenerator()
 	return std::mt19937(device());
 }
 
+class RenderJob {
+public:
+	RenderJob(Image& image, uint32_t x, uint32_t y, const RenderTarget& renderTarget, const Camera& camera, const Scene& scene, std::latch& allDone)
+		: m_Image(image),
+		m_X(x),
+		m_Y(y),
+		m_RenderTarget(renderTarget),
+		m_Camera(camera),
+		m_Scene(scene),
+		m_AllDone(allDone)
+	{
+	}
+
+	RenderJob(RenderJob&&) = default;
+	RenderJob& operator=(RenderJob&&) = default;
+
+	void operator()(Random& randomGenerator) {
+		for (size_t i = 0; i < NumPixelsPerJob; i++)
+		{
+			RGBColor color;
+			auto y = m_Y + i;
+			if (i + m_Y > m_RenderTarget.Width) {
+				break;
+			}
+			for (size_t sample = 0; sample < m_RenderTarget.SamplesPerPixel; sample++)
+			{
+				auto u = (y + randomGenerator.Next()) / (m_RenderTarget.Width - 1);
+				auto v = (m_X + randomGenerator.Next()) / (m_RenderTarget.Height - 1);
+				color += SampleRayColor(m_Camera.get().CreateRay(u, v), m_Scene.get());
+			}
+			m_Image.get().Pixels[m_RenderTarget.Width * (m_RenderTarget.Height - m_X - 1) + y] = color / m_RenderTarget.SamplesPerPixel;
+		}
+		m_AllDone.get().count_down();
+	}
+private:
+	std::reference_wrapper<Image> m_Image;
+	uint32_t m_X;
+	uint32_t m_Y;
+	RenderTarget m_RenderTarget;
+	std::reference_wrapper<const Camera> m_Camera;
+	std::reference_wrapper<const Scene> m_Scene;
+
+	std::reference_wrapper<std::latch> m_AllDone;
+};
+
 int main(int argumentCount, char** argumentVector)
 {	
 	RenderTarget render_target;
 	Image image;
 	image.Dimensions = { render_target.Width, render_target.Height };
+	image.Pixels.resize(render_target.Width * render_target.Height);
 
 	Camera camera(RenderTarget::AspectRatio);
 
 	Random randomGenerator;
 	Scene scene = CreateScene(randomGenerator);
 	
-	ScopedTimer timer;
-	for (int64_t i = render_target.Height - 1; i >= 0; --i)
+	std::optional<JobSystem<RenderJob>> jobSystem;
+	if (Concurrency)
 	{
-		for (size_t j = 0; j < render_target.Width; ++j)
-		{
-			RGBColor color;
-			for (size_t sample = 0; sample < RenderTarget::SamplesPerPixel; sample++)
-			{
-				auto u = (j + randomGenerator.Next()) / (render_target.Width - 1);
-				auto v = (i + randomGenerator.Next()) / (render_target.Height - 1);
-				color += SampleRayColor(camera.CreateRay(u, v), scene);
-			}
-			
-			image.Pixels.emplace_back(color / RenderTarget::SamplesPerPixel);
-		}
-		std::cout << "Traced line: " << (render_target.Height - i) << " out of " << render_target.Height << "\n";
+		jobSystem.emplace();
 	}
-	
+	ScopedTimer timer;
+
+	std::vector<RenderJob> renderJobs;
+
+	const uint32_t NumJobs = render_target.Height * std::ceil(static_cast<float>(render_target.Width) / static_cast<float>(NumPixelsPerJob));
+	renderJobs.reserve(NumJobs);
+	std::latch done(NumJobs);
+	uint32_t numSpawned = 0;
+	for (size_t i = 0; i < render_target.Height; ++i)
+	{
+		for (size_t j = 0; j < render_target.Width; j += NumPixelsPerJob)
+		{
+			renderJobs.emplace_back(image, i, j, render_target, camera, scene, done);
+			numSpawned++;
+		}
+	}
+	std::cout << "Expecting " << numSpawned << "jobs\n";
+
+	if (jobSystem) {
+		jobSystem->SpawnAll(std::move(renderJobs));
+		std::cout << "All jobs spawned, waiting for " << NumJobs << " jobs" << std::endl;
+
+		done.wait();
+
+	}
+	else {
+		for (auto& job : renderJobs)
+		{
+			job(randomGenerator);
+		}
+	}
+	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
+
+
 	{
 		PNGEncoder encoder;
 		OutputBuffer png_buffer = encoder.encode(image);
@@ -139,14 +213,13 @@ int main(int argumentCount, char** argumentVector)
 	{
 		PPMEncoder encoder;
 		OutputBuffer ppm_buffer = encoder.encode(image);
-		
+
 		std::ofstream output_file;
 		output_file.open("output.ppm", std::fstream::out);
 		output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
 		output_file.close();
-		
+
 	}
-	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
 	system("pause");
 	return 0;
 }

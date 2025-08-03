@@ -1,9 +1,9 @@
 #include "Dielectric.h"
 
 #include "../HittableObject.h"
-#include "../Vector3.inl"
+#include "../Math/Vector3.inl"
 #include "../Random.h"
-#include "../Ray.inl"
+#include "../Math/Ray.inl"
 
 Dielectric::Dielectric(double refractiveIndex, Random& randomGenerator) : 
 	RefractiveIndex(refractiveIndex),

@@ -93,6 +93,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/clang:-Wno-microsoft-include
+</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libspng.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -106,6 +108,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/clang:-Wno-microsoft-include
+</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libspng.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -121,6 +125,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/clang:-Wno-microsoft-include
+</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -138,6 +144,8 @@
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/clang:-Wno-microsoft-include
+</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -152,9 +160,11 @@
     <ClCompile Include="Image\Image.cpp" />
     <ClCompile Include="Image\PNGEncoder.cpp" />
     <ClCompile Include="Image\PPMEncoder.cpp" />
+    <ClCompile Include="JobSystem.cpp" />
     <ClCompile Include="Materials\DebugMaterial.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClInclude Include="AABB.h" />
+    <ClInclude Include="JobSystem.h" />
+    <ClInclude Include="Math\AABB.h" />
     <ClInclude Include="Benchmarking\ScopedTimer.h" />
     <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
@@ -168,12 +178,12 @@
     <ClInclude Include="Materials\Lambertian.h" />
     <ClInclude Include="Materials\Material.h" />
     <ClInclude Include="Materials\Metalic.h" />
-    <ClInclude Include="Math.h" />
+    <ClInclude Include="Math\Math.h" />
     <ClInclude Include="Random.h" />
-    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Math\Ray.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="Sphere.h" />
-    <ClInclude Include="Vector3.inl">
+    <ClInclude Include="Math\Sphere.h" />
+    <ClInclude Include="Math\Vector3.inl">
       <FileType>Document</FileType>
     </ClInclude>
     <ClCompile Include="Materials\Dielectric.cpp" />
@@ -181,16 +191,16 @@
     <ClCompile Include="Materials\Metalic.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Math\Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Math\Vector3.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AABB.inl" />
-    <None Include="Math.inl" />
-    <None Include="Ray.inl" />
-    <None Include="Sphere.inl" />
+    <None Include="Math\AABB.inl" />
+    <None Include="Math\Math.inl" />
+    <None Include="Math\Ray.inl" />
+    <None Include="Math\Sphere.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

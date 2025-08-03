@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "Sphere.inl"
-#include "AABB.inl"
+#include "Math/Sphere.inl"
+#include "Math/AABB.inl"
 #include "Materials/DebugMaterial.h"
 
 // TODO: Copying the primitives here does not allow for modification after initialization.

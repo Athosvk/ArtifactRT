@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../Vector3.h"
+#include "../Math/Vector3.h"
 
 struct Dimensions
 {
