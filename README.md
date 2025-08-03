@@ -1,7 +1,9 @@
 # ArtifactRT
 A CPU Raytracer based on Peter Shirleys Ray Tracing in One Weekend that has been slightly iterated upon, primarily in terms of performance.
 
-![Sample raytraced image](ArtifactRT/ArtifactRT/output.png)
+<p align="center">
+<img src="ArtifactRT/ArtifactRT/output.png" width="800">
+</p>
 
 ## Optimizations
 The original implementation has been optimized on quite a bit. Making things linear in memory, non-virtual etc. is showcased through the test scene from the sample image.
