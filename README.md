@@ -11,5 +11,8 @@ Original implementation runtime: ~79 seconds.
 
 With optimizations (no BVH): ~1.1 second.
 
+Additionally, a small multi-threaded job system is added to make the path tracer run over n-1 cores.
+Enabling the job system through setting Concurency in Main.cpp will reduces execution time by another factor 10 on tested CPU (timing needs verification due to overheating).
+
 ## File formats
 While the original tutorial only writes to PPM, I find it a painful format for viewer compatibility, so the output can also be written to png (as per the example) using libspng.
