@@ -17,7 +17,10 @@
 #include "Benchmarking/ScopedTimer.h"
 #include "JobSystem.h"
 
-#include <semaphore>
+#include <cmath>
+
+constexpr static uint32_t NumPixelsPerJob = 64;
+constexpr static bool Concurrency = true;
 
 struct RenderTarget
 {
@@ -114,26 +117,36 @@ public:
 	{
 	}
 
+	RenderJob(RenderJob&&) = default;
+	RenderJob& operator=(RenderJob&&) = default;
+
 	void operator()(Random& randomGenerator) {
-		RGBColor color;
-		for (size_t sample = 0; sample < m_RenderTarget.SamplesPerPixel; sample++)
+		for (size_t i = 0; i < NumPixelsPerJob; i++)
 		{
-			auto u = (m_Y + randomGenerator.Next()) / (m_RenderTarget.Width - 1);
-			auto v = (m_X + randomGenerator.Next()) / (m_RenderTarget.Height - 1);
-			color += SampleRayColor(m_Camera.CreateRay(u, v), m_Scene);
+			RGBColor color;
+			auto y = m_Y + i;
+			if (i + m_Y > m_RenderTarget.Width) {
+				break;
+			}
+			for (size_t sample = 0; sample < m_RenderTarget.SamplesPerPixel; sample++)
+			{
+				auto u = (y + randomGenerator.Next()) / (m_RenderTarget.Width - 1);
+				auto v = (m_X + randomGenerator.Next()) / (m_RenderTarget.Height - 1);
+				color += SampleRayColor(m_Camera.get().CreateRay(u, v), m_Scene.get());
+			}
+			m_Image.get().Pixels[m_RenderTarget.Width * (m_RenderTarget.Height - m_X - 1) + y] = color / m_RenderTarget.SamplesPerPixel;
 		}
-		m_Image.Pixels[m_RenderTarget.Width * (m_RenderTarget.Height - m_X - 1) + m_Y] = color / m_RenderTarget.SamplesPerPixel;
-		m_AllDone.count_down();
+		m_AllDone.get().count_down();
 	}
 private:
-	Image& m_Image;
+	std::reference_wrapper<Image> m_Image;
 	uint32_t m_X;
 	uint32_t m_Y;
 	RenderTarget m_RenderTarget;
-	const Camera& m_Camera;
-	const Scene& m_Scene;
+	std::reference_wrapper<const Camera> m_Camera;
+	std::reference_wrapper<const Scene> m_Scene;
 
-	std::latch& m_AllDone;
+	std::reference_wrapper<std::latch> m_AllDone;
 };
 
 int main(int argumentCount, char** argumentVector)
@@ -148,42 +161,66 @@ int main(int argumentCount, char** argumentVector)
 	Random randomGenerator;
 	Scene scene = CreateScene(randomGenerator);
 	
-	JobSystem<RenderJob> jobSystem;
-	ScopedTimer timer;
-
-	std::latch done(render_target.Width * render_target.Height);
-	for (size_t i = 0; i < render_target.Height; ++i)
+	std::optional<JobSystem<RenderJob>> jobSystem;
+	if (Concurrency)
 	{
-		for (size_t j = 0; j < render_target.Width; ++j)
+		jobSystem.emplace();
+	}
+	for (int i = 0; i < 1; i ++) {
+		ScopedTimer timer;
+
+		std::vector<RenderJob> renderJobs;
+
+		const uint32_t NumJobs = render_target.Height * std::ceil(static_cast<float>(render_target.Width) / static_cast<float>(NumPixelsPerJob));
+		renderJobs.reserve(NumJobs);
+		std::latch done(NumJobs);
+		uint32_t numSpawned = 0;
+		for (size_t i = 0; i < render_target.Height; ++i)
 		{
-			jobSystem.Spawn(RenderJob(image, i, j, render_target, camera, scene, done));
+			for (size_t j = 0; j < render_target.Width; j += NumPixelsPerJob)
+			{
+				renderJobs.emplace_back(image, i, j, render_target, camera, scene, done);
+				numSpawned++;
+			}
 		}
-	}
+		std::cout << "Expecting " << numSpawned << "jobs\n";
 
-	std::cout << "All jobs spawned, waiting for " << render_target.Width * render_target.Height << " jobs" << std::endl;
+		if (jobSystem) {
+			jobSystem->SpawnAll(std::move(renderJobs));
+			std::cout << "All jobs spawned, waiting for " << NumJobs << " jobs" << std::endl;
 
-	done.wait();
-	std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
-	
-	{
-		PNGEncoder encoder;
-		OutputBuffer png_buffer = encoder.encode(image);
+			done.wait();
 
-		std::ofstream output_file;
-		output_file.open("output.png", std::fstream::out | std::fstream::binary);
-		output_file.write(png_buffer.Output.get(), png_buffer.NumChars);
+		}
+		else {
+			for (auto& job : renderJobs)
+			{
+				job(randomGenerator);
+			}
+		}
+		std::cout << "Time taken: " << (timer.GetDurationNanoseconds() / 1e9) << " seconds\n";
 
-		output_file.close();
-	}
-	{
-		PPMEncoder encoder;
-		OutputBuffer ppm_buffer = encoder.encode(image);
-		
-		std::ofstream output_file;
-		output_file.open("output.ppm", std::fstream::out);
-		output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
-		output_file.close();
-		
+
+		{
+			PNGEncoder encoder;
+			OutputBuffer png_buffer = encoder.encode(image);
+
+			std::ofstream output_file;
+			output_file.open("output.png", std::fstream::out | std::fstream::binary);
+			output_file.write(png_buffer.Output.get(), png_buffer.NumChars);
+
+			output_file.close();
+		}
+		{
+			PPMEncoder encoder;
+			OutputBuffer ppm_buffer = encoder.encode(image);
+
+			std::ofstream output_file;
+			output_file.open("output.ppm", std::fstream::out);
+			output_file.write(ppm_buffer.Output.get(), ppm_buffer.NumChars);
+			output_file.close();
+
+		}
 	}
 	system("pause");
 	return 0;
