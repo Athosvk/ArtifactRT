@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "HittableObject.h"
-#include "Sphere.h"
-#include "Ray.h"
+#include "Math/Sphere.h"
+#include "Math/Ray.h"
 #include "BVH.h"
 
 class Material;

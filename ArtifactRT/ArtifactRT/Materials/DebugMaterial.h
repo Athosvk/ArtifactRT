@@ -1,10 +1,6 @@
 #pragma once
 #include "Material.h"
-#include "../Vector3.h"
-
-#if _HAS_CXX17 == 0
-#define _HAS_CXX17 1
-#endif
+#include "../Math/Vector3.h"
 
 class DebugMaterial : public Material
 {

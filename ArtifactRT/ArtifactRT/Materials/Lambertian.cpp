@@ -2,8 +2,8 @@
 
 #include "../HittableObject.h"
 #include "../Random.h"
-#include "../Vector3.inl"
-#include "../Ray.inl"
+#include "../Math/Vector3.inl"
+#include "../Math/Ray.inl"
 
 Lambertian::Lambertian(RGBColor albedo, Random& random) : 
 	Albedo(albedo),

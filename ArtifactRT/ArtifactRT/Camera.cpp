@@ -1,7 +1,7 @@
 #include "Camera.h"
 
-#include "Vector3.inl"
-#include "Ray.inl"
+#include "Math/Vector3.inl"
+#include "Math/Ray.inl"
 
 Camera::Camera(double aspectRatio) :
 	m_Origin(Vector3::Zero())

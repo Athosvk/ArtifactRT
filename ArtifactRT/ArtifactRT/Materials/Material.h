@@ -1,8 +1,8 @@
 #pragma once
 #include <optional>
 
-#include "../Vector3.h"
-#include "../Ray.h"
+#include "../Math/Vector3.h"
+#include "../Math/Ray.h"
 
 struct ScatterResult
 {

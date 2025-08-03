@@ -1,7 +1,7 @@
 #include "DebugMaterial.h"
 
 #include "../HittableObject.h"
-#include "../Ray.inl"
+#include "../Math/Ray.inl"
 
 
 DebugMaterial::DebugMaterial(RGBColor color) : m_color(color) 

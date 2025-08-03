@@ -1,8 +1,8 @@
 #pragma once
 #include <optional>
 
-#include "Vector3.h"
-#include "AABB.h"
+#include "Math/Vector3.h"
+#include "Math/AABB.h"
 
 struct Ray;
 class Material;
