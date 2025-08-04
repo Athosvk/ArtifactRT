@@ -20,7 +20,7 @@
 #include <cmath>
 
 constexpr static uint32_t NumPixelsPerJob = 64;
-constexpr static bool Concurrency = true;
+constexpr static bool Concurrency = false;
 
 struct RenderTarget
 {
